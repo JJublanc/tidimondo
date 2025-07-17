@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
 import { ArrowRight, Check, Star, Users, Zap } from 'lucide-react'
 
 export default function HomePage() {
@@ -29,20 +28,12 @@ export default function HomePage() {
           </nav>
 
           <div className="flex items-center space-x-4">
-            <SignedOut>
-              <Link href="/sign-in">
-                <Button variant="ghost">Se connecter</Button>
-              </Link>
-              <Link href="/sign-up">
-                <Button>Commencer</Button>
-              </Link>
-            </SignedOut>
-            <SignedIn>
-              <Link href="/dashboard">
-                <Button variant="outline">Dashboard</Button>
-              </Link>
-              <UserButton />
-            </SignedIn>
+            <Link href="/sign-in">
+              <Button variant="ghost">Se connecter</Button>
+            </Link>
+            <Link href="/sign-up">
+              <Button>Commencer</Button>
+            </Link>
           </div>
         </div>
       </header>
@@ -59,22 +50,12 @@ export default function HomePage() {
               Une plateforme moderne et flexible pour développer, déployer et monétiser vos applications SaaS rapidement.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <SignedOut>
-                <Link href="/sign-up">
-                  <Button size="lg" className="text-lg px-8 py-6">
-                    Commencer gratuitement
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
-                </Link>
-              </SignedOut>
-              <SignedIn>
-                <Link href="/dashboard">
-                  <Button size="lg" className="text-lg px-8 py-6">
-                    Accéder au Dashboard
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
-                </Link>
-              </SignedIn>
+              <Link href="/sign-up">
+                <Button size="lg" className="text-lg px-8 py-6">
+                  Commencer gratuitement
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
               <Button variant="outline" size="lg" className="text-lg px-8 py-6">
                 Voir la démo
               </Button>
@@ -167,20 +148,11 @@ export default function HomePage() {
                 ))}
               </ul>
 
-              <SignedOut>
-                <Link href="/sign-up" className="block">
-                  <Button className="w-full" size="lg">
-                    Commencer maintenant
-                  </Button>
-                </Link>
-              </SignedOut>
-              <SignedIn>
-                <Link href="/pricing" className="block">
-                  <Button className="w-full" size="lg">
-                    Gérer l'abonnement
-                  </Button>
-                </Link>
-              </SignedIn>
+              <Link href="/sign-up" className="block">
+                <Button className="w-full" size="lg">
+                  Commencer maintenant
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
