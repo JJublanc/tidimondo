@@ -137,6 +137,22 @@ CREATE INDEX idx_subscriptions_stripe ON subscriptions(stripe_subscription_id);
 3. Sélectionnez les événements : `user.created`, `user.updated`, `user.deleted`
 
 ### Webhooks Stripe
+
+#### 🚀 Développement (Recommandé : Stripe CLI)
+```bash
+# Installation
+brew install stripe/stripe-cli/stripe
+
+# Connexion
+stripe login
+
+# Écoute des webhooks
+stripe listen --forward-to localhost:3000/api/webhooks/stripe
+```
+
+**Avantages** : Pas de configuration manuelle, logs détaillés, tests intégrés
+
+#### 🌐 Production (Dashboard Stripe)
 1. Dans le dashboard Stripe, allez dans "Developers" > "Webhooks"
 2. Ajoutez un endpoint : `https://votre-domaine.com/api/webhooks/stripe`
 3. Sélectionnez les événements :
@@ -146,24 +162,43 @@ CREATE INDEX idx_subscriptions_stripe ON subscriptions(stripe_subscription_id);
    - `invoice.payment_succeeded`
    - `invoice.payment_failed`
 
+📖 **Documentation complète** : Voir [00-STRIPE_DOCUMENTATION_INDEX.md](./00-STRIPE_DOCUMENTATION_INDEX.md)
+
 ## 🏗️ Structure du projet
 
 Consultez [PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md) pour une explication détaillée de l'organisation du code.
 
 ## 🧪 Test de l'application
 
-### Test sans configuration complète
+### Test rapide de l'interface
 Vous pouvez tester l'interface même sans configurer tous les services :
 
 1. Commentez temporairement le ClerkProvider dans `src/app/layout.tsx`
 2. Lancez `npm run dev`
 3. Visitez [http://localhost:3000](http://localhost:3000)
 
+### Test complet avec Stripe CLI (Recommandé)
+```bash
+# Terminal 1 : Application
+npm run dev
+
+# Terminal 2 : Webhooks Stripe
+stripe listen --forward-to localhost:3000/api/webhooks/stripe
+
+# Terminal 3 : Tests d'événements
+stripe trigger checkout.session.completed
+stripe trigger customer.subscription.created
+```
+
 ### Test avec configuration complète
 1. Configurez toutes les variables d'environnement
 2. Créez le schéma de base de données
-3. Configurez les webhooks
+3. Configurez les webhooks (Stripe CLI ou manuel)
 4. Testez le flux complet : inscription → dashboard → abonnement
+
+📖 **Guides de test détaillés** :
+- [03-STRIPE_CLI_SETUP.md](./03-STRIPE_CLI_SETUP.md) - Installation Stripe CLI
+- [04-STRIPE_WEBHOOK_TESTING.md](./04-STRIPE_WEBHOOK_TESTING.md) - Tests complets
 
 ## 📦 Scripts disponibles
 
@@ -191,14 +226,33 @@ npm run lint         # Vérifier le code avec ESLint
 - **Paiements** : Stripe
 - **Déploiement** : Vercel
 
-## 📝 Prochaines étapes
+## 📝 État du projet
 
-1. ✅ Configuration de base terminée
-2. 🚧 Configurer les services externes
-3. 🚧 Créer les pages protégées (dashboard, settings)
-4. 🚧 Implémenter la page de tarification
-5. 🚧 Ajouter les webhooks
-6. 🚧 Tests d'intégration
+1. ✅ Configuration Next.js 14 + TypeScript + Tailwind
+2. ✅ Authentification Clerk complète
+3. ✅ Base de données Supabase configurée
+4. ✅ Intégration Stripe (paiements + webhooks)
+5. ✅ Pages protégées (dashboard, settings)
+6. ✅ Page de tarification fonctionnelle
+7. ✅ Webhooks Clerk et Stripe implémentés
+8. ✅ Tests d'intégration documentés
+9. 🚧 Variables d'environnement pour la production
+10. 🚧 Déploiement sur Vercel
+
+## 📚 Documentation
+
+### Documentation Stripe
+- **[00-STRIPE_DOCUMENTATION_INDEX.md](./00-STRIPE_DOCUMENTATION_INDEX.md)** - Index complet de la documentation Stripe
+- **[01-STRIPE_INTEGRATION_GUIDE.md](./01-STRIPE_INTEGRATION_GUIDE.md)** - Guide d'intégration complet
+- **[02-STRIPE_PRICE_ID_SETUP.md](./02-STRIPE_PRICE_ID_SETUP.md)** - Configuration du Price ID
+- **[03-STRIPE_CLI_SETUP.md](./03-STRIPE_CLI_SETUP.md)** - Installation et configuration Stripe CLI
+- **[04-STRIPE_WEBHOOK_TESTING.md](./04-STRIPE_WEBHOOK_TESTING.md)** - Tests complets des webhooks
+- **[05-STRIPE_TROUBLESHOOTING.md](./05-STRIPE_TROUBLESHOOTING.md)** - Résolution des problèmes
+
+### Documentation Générale
+- **[PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md)** - Structure détaillée du projet
+- **[ROUTE_PROTECTION_EXPLAINED.md](./ROUTE_PROTECTION_EXPLAINED.md)** - Protection des routes
+- **[WEBHOOKS_EXPLAINED.md](./WEBHOOKS_EXPLAINED.md)** - Fonctionnement des webhooks
 
 ## 🤝 Contribution
 
