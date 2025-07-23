@@ -5,13 +5,13 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { SubscriptionGate, PremiumBlur } from '@/components/auth/SubscriptionGate'
 import { useSubscription } from '@/hooks/useSubscription'
-import { 
-  Crown, 
-  BarChart3, 
-  Users, 
-  Zap, 
-  Settings, 
-  FileText, 
+import {
+  Crown,
+  BarChart3,
+  Users,
+  Zap,
+  Settings,
+  FileText,
   HelpCircle,
   TrendingUp,
   Calendar,
@@ -259,6 +259,7 @@ export default function DashboardPage() {
             )}
           </div>
         </div>
+
       </main>
     </div>
   )

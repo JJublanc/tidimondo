@@ -1,7 +1,7 @@
 'use client'
 
-import { useUser } from '@clerk/nextjs'
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useAuth } from './useAuth'
 import { supabase } from '@/lib/supabase-client'
 
 interface SubscriptionData {
@@ -11,65 +11,59 @@ interface SubscriptionData {
 }
 
 export function useSubscription() {
-  const { user } = useUser()
+  const { user, loading: authLoading } = useAuth()
   const [subscription, setSubscription] = useState<SubscriptionData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    async function fetchSubscription() {
-      if (!user) {
-        setLoading(false)
-        return
-      }
+    if (authLoading) {
+      return // Attendre que l'authentification soit chargée
+    }
 
+    if (!user) {
+      console.log('❌ Pas d\'utilisateur authentifié')
+      setSubscription(null)
+      setLoading(false)
+      setError(null)
+      return
+    }
+
+    const fetchSubscription = async () => {
       try {
-        const { data, error } = await supabase
+        setLoading(true)
+        setError(null)
+        
+        console.log('📡 Récupération de l\'abonnement pour user:', user.id)
+        
+        const { data, error: supabaseError } = await supabase
           .from('users')
           .select('subscription_status, current_period_end, stripe_customer_id')
-          .eq('clerk_user_id', user.id)
+          .eq('id', user.id) // Utiliser l'ID Supabase directement
           .single()
 
-        if (error) {
-          // Si l'utilisateur n'existe pas encore dans Supabase, ce n'est pas une erreur critique
-          if (error.code === 'PGRST116') {
-            console.log('Utilisateur pas encore créé dans Supabase, statut par défaut appliqué')
+        if (supabaseError) {
+          if (supabaseError.code === 'PGRST116') {
+            console.log('ℹ️ Utilisateur pas encore créé dans la table users')
             setSubscription(null)
           } else {
-            console.error('Erreur lors de la récupération de l\'abonnement:', error)
-            setError(error.message)
+            console.error('❌ Erreur Supabase:', supabaseError)
+            setError(supabaseError.message)
           }
         } else {
+          console.log('✅ Données utilisateur récupérées:', data)
           setSubscription(data)
         }
       } catch (err) {
-        console.error('Erreur:', err)
-        setError('Erreur lors de la récupération des données')
+        console.error('❌ Erreur lors de la récupération:', err)
+        setError(err instanceof Error ? err.message : 'Erreur inconnue')
       } finally {
         setLoading(false)
       }
     }
 
     fetchSubscription()
-  }, [user])
+  }, [user, authLoading])
 
-  const hasActiveSubscription = subscription?.subscription_status === 'active' && 
-    subscription?.current_period_end && 
-    new Date(subscription.current_period_end) > new Date()
-
-  const isTrialing = subscription?.subscription_status === 'trialing'
-  const isPastDue = subscription?.subscription_status === 'past_due'
-  const isCanceled = subscription?.subscription_status === 'canceled'
-
-  return {
-    subscription,
-    hasActiveSubscription,
-    isTrialing,
-    isPastDue,
-    isCanceled,
-    loading,
-    error,
-    // Helper pour vérifier si l'utilisateur a accès aux fonctionnalités premium
-    hasProAccess: hasActiveSubscription || isTrialing
-  }
+  return { subscription, loading, error }
 }
