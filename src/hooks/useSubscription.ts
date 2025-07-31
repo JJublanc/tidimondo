@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useAuth } from './useAuth'
-import { supabase } from '@/lib/supabase-client'
+import { useUser } from '@clerk/nextjs'
+import { useSupabaseWithClerk } from './useSupabaseWithClerk'
 
 interface SubscriptionData {
   subscription_status: string
@@ -11,14 +11,15 @@ interface SubscriptionData {
 }
 
 export function useSubscription() {
-  const { user, loading: authLoading } = useAuth()
+  const { user, isLoaded } = useUser()
+  const { supabase } = useSupabaseWithClerk()
   const [subscription, setSubscription] = useState<SubscriptionData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (authLoading) {
-      return // Attendre que l'authentification soit chargée
+    if (!isLoaded) {
+      return // Attendre que Clerk soit chargé
     }
 
     if (!user) {
@@ -34,28 +35,33 @@ export function useSubscription() {
         setLoading(true)
         setError(null)
         
-        console.log('📡 Récupération de l\'abonnement pour user:', user.id)
+        console.log('📡 Initialisation utilisateur pour:', user.id)
         
-        const { data, error: supabaseError } = await supabase
-          .from('users')
-          .select('subscription_status, current_period_end, stripe_customer_id')
-          .eq('id', user.id) // Utiliser l'ID Supabase directement
-          .single()
+        // APPROCHE DIRECTE : Créer/mettre à jour l'utilisateur d'abord
+        // La fonction gère automatiquement les conflits avec ON CONFLICT
+        const { data: userResult, error: createError } = await supabase
+          .rpc('create_user_profile', {
+            p_clerk_user_id: user.id,
+            p_email: user.emailAddresses[0]?.emailAddress || null
+          })
 
-        if (supabaseError) {
-          if (supabaseError.code === 'PGRST116') {
-            console.log('ℹ️ Utilisateur pas encore créé dans la table users')
-            setSubscription(null)
-          } else {
-            console.error('❌ Erreur Supabase:', supabaseError)
-            setError(supabaseError.message)
-          }
-        } else {
-          console.log('✅ Données utilisateur récupérées:', data)
-          setSubscription(data)
+        if (createError) {
+          console.error('❌ Erreur initialisation utilisateur:', createError)
+          setError(`Erreur initialisation: ${createError.message}`)
+          return
         }
+
+        console.log('✅ Utilisateur initialisé:', userResult)
+        
+        // Utiliser les données retournées par la fonction
+        setSubscription({
+          subscription_status: userResult.subscription_status || 'free',
+          current_period_end: userResult.current_period_end || null,
+          stripe_customer_id: userResult.stripe_customer_id || null
+        })
+
       } catch (err) {
-        console.error('❌ Erreur lors de la récupération:', err)
+        console.error('❌ Erreur lors de l\'initialisation:', err)
         setError(err instanceof Error ? err.message : 'Erreur inconnue')
       } finally {
         setLoading(false)
@@ -63,7 +69,10 @@ export function useSubscription() {
     }
 
     fetchSubscription()
-  }, [user, authLoading])
+  }, [user, isLoaded])
 
-  return { subscription, loading, error }
+  // Calculer hasProAccess basé sur le statut d'abonnement
+  const hasProAccess = subscription?.subscription_status === 'active'
+
+  return { subscription, loading, error, hasProAccess }
 }

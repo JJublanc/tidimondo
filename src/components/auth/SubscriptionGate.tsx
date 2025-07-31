@@ -16,7 +16,7 @@ export function SubscriptionGate({
   fallback, 
   showUpgrade = true 
 }: SubscriptionGateProps) {
-  const { hasProAccess, loading, isPastDue } = useSubscription()
+  const { hasProAccess, loading } = useSubscription()
 
   if (loading) {
     return (
@@ -34,24 +34,6 @@ export function SubscriptionGate({
     return <>{fallback}</>
   }
 
-  if (isPastDue) {
-    return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-        <Lock className="h-12 w-12 text-red-500 mx-auto mb-4" />
-        <h3 className="text-lg font-semibold text-red-900 mb-2">
-          Paiement en retard
-        </h3>
-        <p className="text-red-700 mb-4">
-          Votre abonnement est suspendu en raison d'un problème de paiement.
-        </p>
-        <Link href="/pricing">
-          <Button className="bg-red-600 hover:bg-red-700">
-            Mettre à jour le paiement
-          </Button>
-        </Link>
-      </div>
-    )
-  }
 
   return (
     <div className="bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-6 text-center">

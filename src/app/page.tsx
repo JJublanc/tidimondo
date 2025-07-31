@@ -1,12 +1,9 @@
-'use client'
-
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { ArrowRight, Check, Star, Users, Zap, LogOut } from 'lucide-react'
-import { useAuth } from '@/hooks/useAuth'
+import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
+import { ArrowRight, Check, Star, Users, Zap } from 'lucide-react'
 
 export default function HomePage() {
-  const { user, loading, signOut } = useAuth()
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Header */}
@@ -32,37 +29,20 @@ export default function HomePage() {
           </nav>
 
           <div className="flex items-center space-x-4">
-            {loading ? (
-              <div className="animate-pulse">
-                <div className="h-9 w-20 bg-gray-200 rounded"></div>
-              </div>
-            ) : user ? (
-              <>
-                <Link href="/dashboard">
-                  <Button variant="outline">Dashboard</Button>
-                </Link>
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm text-gray-600">{user.email}</span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => signOut()}
-                    className="p-2"
-                  >
-                    <LogOut className="h-4 w-4" />
-                  </Button>
-                </div>
-              </>
-            ) : (
-              <>
-                <Link href="/auth">
-                  <Button variant="ghost">Se connecter</Button>
-                </Link>
-                <Link href="/auth">
-                  <Button>Commencer</Button>
-                </Link>
-              </>
-            )}
+            <SignedOut>
+              <Link href="/sign-in">
+                <Button variant="ghost">Se connecter</Button>
+              </Link>
+              <Link href="/sign-up">
+                <Button>Commencer</Button>
+              </Link>
+            </SignedOut>
+            <SignedIn>
+              <Link href="/dashboard">
+                <Button variant="outline">Dashboard</Button>
+              </Link>
+              <UserButton />
+            </SignedIn>
           </div>
         </div>
       </header>
@@ -79,21 +59,22 @@ export default function HomePage() {
               Une plateforme moderne et flexible pour développer, déployer et monétiser vos applications SaaS rapidement.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              {user ? (
+              <SignedOut>
+                <Link href="/sign-up">
+                  <Button size="lg" className="text-lg px-8 py-6">
+                    Commencer gratuitement
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </Link>
+              </SignedOut>
+              <SignedIn>
                 <Link href="/dashboard">
                   <Button size="lg" className="text-lg px-8 py-6">
                     Accéder au Dashboard
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                 </Link>
-              ) : (
-                <Link href="/auth">
-                  <Button size="lg" className="text-lg px-8 py-6">
-                    Commencer gratuitement
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
-                </Link>
-              )}
+              </SignedIn>
               <Button variant="outline" size="lg" className="text-lg px-8 py-6">
                 Voir la démo
               </Button>
@@ -186,19 +167,20 @@ export default function HomePage() {
                 ))}
               </ul>
 
-              {user ? (
+              <SignedOut>
+                <Link href="/sign-up" className="block">
+                  <Button className="w-full" size="lg">
+                    Commencer maintenant
+                  </Button>
+                </Link>
+              </SignedOut>
+              <SignedIn>
                 <Link href="/pricing" className="block">
                   <Button className="w-full" size="lg">
                     Gérer l'abonnement
                   </Button>
                 </Link>
-              ) : (
-                <Link href="/auth" className="block">
-                  <Button className="w-full" size="lg">
-                    Commencer maintenant
-                  </Button>
-                </Link>
-              )}
+              </SignedIn>
             </div>
           </div>
         </div>

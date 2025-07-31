@@ -19,14 +19,14 @@ export async function POST(request: NextRequest) {
   }
 
   const webhook = new Webhook(process.env.WEBHOOK_SECRET!)
-  let event
+  let event: any
 
   try {
     event = webhook.verify(body, {
       'svix-id': svixId,
       'svix-timestamp': svixTimestamp,
       'svix-signature': svixSignature,
-    })
+    }) as any
   } catch (error) {
     console.error('Erreur de vérification du webhook Clerk:', error)
     return NextResponse.json(
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
   try {
     switch (event.type) {
       case 'user.created': {
-        const { id, email_addresses, first_name, last_name } = event.data
+        const { id, email_addresses } = event.data
         console.log('User created:', id)
 
         const { error } = await supabaseAdmin
@@ -46,9 +46,7 @@ export async function POST(request: NextRequest) {
           .insert({
             clerk_user_id: id,
             email: email_addresses[0]?.email_address,
-            first_name: first_name || null,
-            last_name: last_name || null,
-            subscription_status: 'inactive',
+            subscription_status: 'free',
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           })
@@ -62,15 +60,13 @@ export async function POST(request: NextRequest) {
       }
 
       case 'user.updated': {
-        const { id, email_addresses, first_name, last_name } = event.data
+        const { id, email_addresses } = event.data
         console.log('User updated:', id)
 
         const { error } = await supabaseAdmin
           .from('users')
           .update({
             email: email_addresses[0]?.email_address,
-            first_name: first_name || null,
-            last_name: last_name || null,
             updated_at: new Date().toISOString()
           })
           .eq('clerk_user_id', id)
