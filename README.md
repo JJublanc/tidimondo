@@ -69,6 +69,24 @@ L'application sera disponible sur [http://localhost:3000](http://localhost:3000)
      - After sign-in: `/dashboard`
      - After sign-up: `/dashboard`
 
+#### Configuration JWT Template (Important)
+Pour l'intégration avec Supabase, configurez un JWT Template dans Clerk :
+
+1. Dans le dashboard Clerk, allez dans "JWT Templates"
+2. Créez un nouveau template nommé "supabase"
+3. Configurez les claims :
+```json
+{
+ "aud": "authenticated",
+ "exp": {{exp}},
+ "iat": {{iat}},
+ "iss": "{{iss}}",
+ "sub": "{{user.id}}",
+ "email": "{{user.primary_email_address.email_address}}",
+ "role": "authenticated"
+}
+```
+
 ### 2. Supabase (Base de données)
 
 1. Créez un compte sur [Supabase.com](https://supabase.com)
@@ -90,7 +108,24 @@ L'application sera disponible sur [http://localhost:3000](http://localhost:3000)
 
 ## 🗄️ Schéma de base de données
 
-Exécutez ces requêtes SQL dans l'éditeur Supabase :
+### Configuration automatique (Recommandée)
+
+Utilisez les migrations Supabase pour configurer automatiquement la base de données :
+
+```bash
+# Appliquer toutes les migrations
+npx supabase db push
+```
+
+Les migrations incluent :
+- **Table users** avec politiques RLS hybrides
+- **Fonction create_user_profile** pour création automatique
+- **Politiques de sécurité** optimisées
+- **Index** pour les performances
+
+### Configuration manuelle (Alternative)
+
+Si vous préférez configurer manuellement, exécutez ces requêtes SQL dans l'éditeur Supabase :
 
 ```sql
 -- Table des utilisateurs
@@ -101,33 +136,83 @@ CREATE TABLE users (
   first_name TEXT,
   last_name TEXT,
   stripe_customer_id TEXT,
-  subscription_status TEXT DEFAULT 'inactive',
+  subscription_status TEXT DEFAULT 'free',
   subscription_id TEXT,
   current_period_end TIMESTAMP,
   created_at TIMESTAMP DEFAULT NOW(),
   updated_at TIMESTAMP DEFAULT NOW()
 );
 
--- Table des abonnements
-CREATE TABLE subscriptions (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-  stripe_subscription_id TEXT UNIQUE NOT NULL,
-  stripe_customer_id TEXT NOT NULL,
-  stripe_price_id TEXT NOT NULL,
-  status TEXT NOT NULL,
-  current_period_start TIMESTAMP NOT NULL,
-  current_period_end TIMESTAMP NOT NULL,
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
-);
+-- Activer RLS
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+
+-- Politiques RLS hybrides
+CREATE POLICY "Allow authenticated user creation" ON users
+  FOR INSERT WITH CHECK (auth.jwt() ->> 'sub' IS NOT NULL);
+
+CREATE POLICY "Block client reads" ON users
+  FOR SELECT USING (false);
+
+CREATE POLICY "Users can update own profile" ON users
+  FOR UPDATE USING (
+    auth.jwt() ->> 'sub' IS NOT NULL AND
+    clerk_user_id = auth.jwt() ->> 'sub'
+  );
+
+-- Fonction de création automatique d'utilisateurs
+CREATE OR REPLACE FUNCTION public.create_user_profile(
+  p_clerk_user_id text,
+  p_email text
+)
+RETURNS json
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  result_user public.users%ROWTYPE;
+  jwt_sub text;
+BEGIN
+  jwt_sub := auth.jwt() ->> 'sub';
+  
+  IF jwt_sub IS NULL OR jwt_sub != p_clerk_user_id THEN
+    RAISE EXCEPTION 'Unauthorized: JWT mismatch';
+  END IF;
+
+  INSERT INTO public.users (clerk_user_id, email, subscription_status)
+  VALUES (p_clerk_user_id, p_email, 'free')
+  ON CONFLICT (clerk_user_id)
+  DO UPDATE SET
+    email = EXCLUDED.email,
+    updated_at = now()
+  RETURNING * INTO result_user;
+
+  RETURN json_build_object(
+    'id', result_user.id,
+    'clerk_user_id', result_user.clerk_user_id,
+    'subscription_status', result_user.subscription_status,
+    'created_at', result_user.created_at
+  );
+END;
+$$;
+
+-- Permissions pour la fonction
+GRANT EXECUTE ON FUNCTION public.create_user_profile(text, text) TO authenticated;
 
 -- Index pour les performances
 CREATE INDEX idx_users_clerk_id ON users(clerk_user_id);
 CREATE INDEX idx_users_stripe_customer ON users(stripe_customer_id);
-CREATE INDEX idx_subscriptions_user ON subscriptions(user_id);
-CREATE INDEX idx_subscriptions_stripe ON subscriptions(stripe_subscription_id);
 ```
+
+### 🔐 Stratégie RLS Hybride
+
+Notre solution utilise une **stratégie RLS hybride** qui :
+
+- ✅ **Bloque la lecture** directe de la table `users` côté client (sécurité)
+- ✅ **Permet la création** automatique via une fonction SQL sécurisée
+- ✅ **Gère l'idempotence** avec `ON CONFLICT DO UPDATE`
+- ✅ **Valide les JWT** côté serveur dans la fonction
+
+📖 **Documentation complète** : [CLERK_SUPABASE_JWT_INTEGRATION.md](./CLERK_SUPABASE_JWT_INTEGRATION.md)
 
 ## 🔗 Configuration des webhooks
 
@@ -229,15 +314,27 @@ npm run lint         # Vérifier le code avec ESLint
 ## 📝 État du projet
 
 1. ✅ Configuration Next.js 14 + TypeScript + Tailwind
-2. ✅ Authentification Clerk complète
-3. ✅ Base de données Supabase configurée
-4. ✅ Intégration Stripe (paiements + webhooks)
-5. ✅ Pages protégées (dashboard, settings)
-6. ✅ Page de tarification fonctionnelle
-7. ✅ Webhooks Clerk et Stripe implémentés
-8. ✅ Tests d'intégration documentés
-9. 🚧 Variables d'environnement pour la production
-10. 🚧 Déploiement sur Vercel
+2. ✅ Authentification Clerk complète avec JWT Templates
+3. ✅ Base de données Supabase avec stratégie RLS hybride
+4. ✅ Intégration Clerk-Supabase avec création automatique d'utilisateurs
+5. ✅ Intégration Stripe (paiements + webhooks)
+6. ✅ Pages protégées (dashboard, settings)
+7. ✅ Page de tarification fonctionnelle
+8. ✅ Webhooks Clerk et Stripe implémentés
+9. ✅ Politiques RLS sécurisées (lecture bloquée côté client)
+10. ✅ Fonction SQL pour création automatique d'utilisateurs
+11. ✅ Tests d'intégration documentés
+12. ✅ Documentation complète de l'architecture
+13. 🚧 Variables d'environnement pour la production
+14. 🚧 Déploiement sur Vercel
+
+### 🎯 Fonctionnalités clés
+
+- **Authentification sécurisée** : Intégration Clerk-Supabase avec JWT
+- **Création automatique d'utilisateurs** : Pas besoin de webhooks complexes
+- **Sécurité RLS** : Lecture bloquée côté client, écriture contrôlée
+- **Paiements Stripe** : Abonnements et webhooks fonctionnels
+- **Architecture moderne** : Next.js 14, TypeScript, Tailwind CSS
 
 ## 📚 Documentation
 
@@ -249,10 +346,16 @@ npm run lint         # Vérifier le code avec ESLint
 - **[04-STRIPE_WEBHOOK_TESTING.md](./04-STRIPE_WEBHOOK_TESTING.md)** - Tests complets des webhooks
 - **[05-STRIPE_TROUBLESHOOTING.md](./05-STRIPE_TROUBLESHOOTING.md)** - Résolution des problèmes
 
+### Documentation Authentification
+- **[CLERK_SUPABASE_JWT_INTEGRATION.md](./CLERK_SUPABASE_JWT_INTEGRATION.md)** - Intégration Clerk-Supabase avec stratégie RLS hybride
+- **[SUPABASE_THIRD_PARTY_AUTH_CONFIG.md](./SUPABASE_THIRD_PARTY_AUTH_CONFIG.md)** - Configuration Third-Party Auth
+- **[MIGRATION_GUIDE.md](./MIGRATION_GUIDE.md)** - Guide de migration
+
 ### Documentation Générale
 - **[PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md)** - Structure détaillée du projet
 - **[ROUTE_PROTECTION_EXPLAINED.md](./ROUTE_PROTECTION_EXPLAINED.md)** - Protection des routes
 - **[WEBHOOKS_EXPLAINED.md](./WEBHOOKS_EXPLAINED.md)** - Fonctionnement des webhooks
+- **[TESTING_GUIDE.md](./TESTING_GUIDE.md)** - Guide de tests complets
 
 ## 🤝 Contribution
 
