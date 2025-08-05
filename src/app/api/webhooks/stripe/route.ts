@@ -48,16 +48,12 @@ export async function POST(request: NextRequest) {
           if (clerkUserId) {
             const { error } = await supabaseAdmin
               .from('users')
-              .upsert({
-                clerk_user_id: clerkUserId,
+              .update({
                 stripe_customer_id: session.customer as string,
-                subscription_id: subscription.id,
                 subscription_status: subscription.status,
-                current_period_end: (subscription as any).current_period_end
-                  ? new Date((subscription as any).current_period_end * 1000).toISOString()
-                  : null,
                 updated_at: new Date().toISOString()
               })
+              .eq('clerk_user_id', clerkUserId)
 
             if (error) {
               console.error('Erreur Supabase:', error)
@@ -78,12 +74,9 @@ export async function POST(request: NextRequest) {
           .from('users')
           .update({
             subscription_status: subscription.status,
-            current_period_end: (subscription as any).current_period_end
-              ? new Date((subscription as any).current_period_end * 1000).toISOString()
-              : null,
             updated_at: new Date().toISOString()
           })
-          .eq('subscription_id', subscription.id)
+          .eq('stripe_customer_id', subscription.customer as string)
 
         if (error) {
           console.error('Erreur Supabase:', error)
@@ -102,11 +95,10 @@ export async function POST(request: NextRequest) {
           .from('users')
           .update({
             subscription_status: 'canceled',
-            subscription_id: null,
-            current_period_end: null,
+            stripe_customer_id: null,
             updated_at: new Date().toISOString()
           })
-          .eq('subscription_id', subscription.id)
+          .eq('stripe_customer_id', subscription.customer as string)
 
         if (error) {
           console.error('Erreur Supabase:', error)
@@ -128,7 +120,7 @@ export async function POST(request: NextRequest) {
               subscription_status: 'active',
               updated_at: new Date().toISOString()
             })
-            .eq('subscription_id', (invoice as any).subscription as string)
+            .eq('stripe_customer_id', invoice.customer as string)
 
           if (error) {
             console.error('Erreur Supabase:', error)
@@ -151,7 +143,7 @@ export async function POST(request: NextRequest) {
               subscription_status: 'past_due',
               updated_at: new Date().toISOString()
             })
-            .eq('subscription_id', (invoice as any).subscription as string)
+            .eq('stripe_customer_id', invoice.customer as string)
 
           if (error) {
             console.error('Erreur Supabase:', error)

@@ -39,11 +39,13 @@ BEGIN
     updated_at = now()
   RETURNING * INTO result_user;
 
-  -- Retourner seulement les infos nécessaires
+  -- Retourner toutes les infos nécessaires pour l'abonnement
   RETURN json_build_object(
     'id', result_user.id,
     'clerk_user_id', result_user.clerk_user_id,
     'subscription_status', result_user.subscription_status,
+    'current_period_end', result_user.current_period_end,
+    'stripe_customer_id', result_user.stripe_customer_id,
     'created_at', result_user.created_at
   );
 END;
