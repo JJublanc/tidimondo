@@ -24,6 +24,7 @@ supabase init
 
 # Lier au projet distant
 supabase link --project-ref lytrlaotgttqxlrskbiz
+supabase link --project-ref zqsjynmzhgaqnmztrzgg (pour la dev)
 ```
 
 ### Appliquer les migrations
