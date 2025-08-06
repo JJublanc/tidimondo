@@ -43,19 +43,17 @@ export function useSupabaseClient(): SupabaseClient {
         }
         
         if (token && token !== lastTokenRef.current) {
-          console.log('✅ Nouveau token Clerk récupéré, connexion avec signInWithJwt')
+          console.log('✅ Nouveau token Clerk récupéré, configuration de la session')
           
-          const { error } = await client.auth.signInWithJwt({
-            token,
-            options: {
-              persistSession: true
-            }
+          const { error } = await client.auth.setSession({
+            access_token: token,
+            refresh_token: token
           })
           
           if (error) {
-            console.error('❌ Erreur lors de la connexion JWT:', error)
+            console.error('❌ Erreur lors de la configuration de la session:', error)
           } else {
-            console.log('✅ Connexion Supabase réussie avec JWT')
+            console.log('✅ Session Supabase configurée avec succès')
             lastTokenRef.current = token
           }
         } else if (!token) {
@@ -63,14 +61,17 @@ export function useSupabaseClient(): SupabaseClient {
           const defaultToken = await session.getToken()
           
           if (defaultToken && defaultToken !== lastTokenRef.current) {
-            console.log('✅ Connexion avec token par défaut')
+            console.log('✅ Configuration avec token par défaut')
             
-            const { error } = await client.auth.signInWithJwt({ token: defaultToken })
+            const { error } = await client.auth.setSession({
+              access_token: defaultToken,
+              refresh_token: defaultToken
+            })
             
             if (error) {
               console.error('❌ Erreur avec token par défaut:', error)
             } else {
-              console.log('✅ Connexion configurée avec token par défaut')
+              console.log('✅ Session configurée avec token par défaut')
               lastTokenRef.current = defaultToken
             }
           }

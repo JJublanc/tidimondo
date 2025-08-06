@@ -58,7 +58,7 @@ export default function AuthPage() {
           
           <div className="mt-8 text-center text-sm text-gray-600">
             <Link href="/" className="hover:text-gray-900 transition-colors">
-              ← Retour à l'accueil
+              ← Retour à l&apos;accueil
             </Link>
           </div>
         </div>

@@ -254,7 +254,7 @@ export default function DashboardPage() {
               <div className="flex items-center space-x-3">
                 <Crown className="h-5 w-5 text-purple-600" />
                 <span className="text-gray-700">Abonnement Pro activé</span>
-                <span className="text-sm text-gray-500">Aujourd'hui</span>
+                <span className="text-sm text-gray-500">Aujourd&apos;hui</span>
               </div>
             )}
           </div>

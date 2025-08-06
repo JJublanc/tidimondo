@@ -4,6 +4,10 @@ import { supabaseAdmin } from '@/lib/supabase-admin'
 import { headers } from 'next/headers'
 import Stripe from 'stripe'
 
+interface InvoiceWithSubscription extends Stripe.Invoice {
+  subscription?: string | Stripe.Subscription
+}
+
 export async function POST(request: NextRequest) {
   const body = await request.text()
   const signature = (await headers()).get('stripe-signature')
@@ -112,7 +116,7 @@ export async function POST(request: NextRequest) {
         const invoice = event.data.object as Stripe.Invoice
         console.log('Payment succeeded:', invoice.id)
 
-        if ((invoice as any).subscription) {
+        if ((invoice as InvoiceWithSubscription).subscription) {
           // Réactiver l'abonnement si nécessaire
           const { error } = await supabaseAdmin
             .from('users')
@@ -125,7 +129,7 @@ export async function POST(request: NextRequest) {
           if (error) {
             console.error('Erreur Supabase:', error)
           } else {
-            console.log('Paiement réussi pour l\'abonnement:', (invoice as any).subscription)
+            console.log('Paiement réussi pour l\'abonnement:', (invoice as InvoiceWithSubscription).subscription)
           }
         }
         break
@@ -135,7 +139,7 @@ export async function POST(request: NextRequest) {
         const invoice = event.data.object as Stripe.Invoice
         console.log('Payment failed:', invoice.id)
 
-        if ((invoice as any).subscription) {
+        if ((invoice as InvoiceWithSubscription).subscription) {
           // Marquer l'abonnement comme en échec de paiement
           const { error } = await supabaseAdmin
             .from('users')
@@ -148,7 +152,7 @@ export async function POST(request: NextRequest) {
           if (error) {
             console.error('Erreur Supabase:', error)
           } else {
-            console.log('Échec de paiement pour l\'abonnement:', (invoice as any).subscription)
+            console.log('Échec de paiement pour l\'abonnement:', (invoice as InvoiceWithSubscription).subscription)
           }
         }
         break

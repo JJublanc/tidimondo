@@ -113,7 +113,7 @@ export default async function PricingPage() {
               <input type="hidden" name="userId" value={user.id} />
               <input type="hidden" name="userEmail" value={user.emailAddresses[0]?.emailAddress} />
               <Button type="submit" className="w-full" size="lg">
-                S'abonner maintenant
+                S&apos;abonner maintenant
               </Button>
             </form>
           </div>
@@ -131,13 +131,13 @@ export default async function PricingPage() {
                 Puis-je annuler à tout moment ?
               </h3>
               <p className="text-gray-600">
-                Oui, vous pouvez annuler votre abonnement à tout moment. Votre accès restera actif jusqu'à la fin de votre période de facturation.
+                Oui, vous pouvez annuler votre abonnement à tout moment. Votre accès restera actif jusqu&apos;à la fin de votre période de facturation.
               </p>
             </div>
             
             <div>
               <h3 className="font-semibold text-gray-900 mb-2">
-                Y a-t-il une période d'essai ?
+                Y a-t-il une période d&apos;essai ?
               </h3>
               <p className="text-gray-600">
                 Le plan gratuit vous permet de tester les fonctionnalités de base. Vous pouvez passer au plan Pro à tout moment.
