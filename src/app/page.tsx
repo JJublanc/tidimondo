@@ -91,7 +91,7 @@ export default function HomePage() {
               Tout ce dont vous avez besoin
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Une suite complète d'outils pour créer et gérer votre SaaS
+              Une suite complète d&apos;outils pour créer et gérer votre SaaS
             </p>
           </div>
 
@@ -102,7 +102,7 @@ export default function HomePage() {
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">Déploiement rapide</h3>
               <p className="text-gray-600">
-                Lancez votre SaaS en quelques minutes avec notre infrastructure prête à l'emploi.
+                Lancez votre SaaS en quelques minutes avec notre infrastructure prête à l&apos;emploi.
               </p>
             </div>
 
@@ -177,7 +177,7 @@ export default function HomePage() {
               <SignedIn>
                 <Link href="/pricing" className="block">
                   <Button className="w-full" size="lg">
-                    Gérer l'abonnement
+                    Gérer l&apos;abonnement
                   </Button>
                 </Link>
               </SignedIn>

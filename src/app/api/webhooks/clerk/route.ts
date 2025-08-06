@@ -3,6 +3,14 @@ import { supabaseAdmin } from '@/lib/supabase-admin'
 import { headers } from 'next/headers'
 import { Webhook } from 'svix'
 
+interface ClerkWebhookEvent {
+  type: string
+  data: {
+    id: string
+    email_addresses?: Array<{ email_address: string }>
+  }
+}
+
 export async function POST(request: NextRequest) {
   const body = await request.text()
   const headersList = await headers()
@@ -19,14 +27,14 @@ export async function POST(request: NextRequest) {
   }
 
   const webhook = new Webhook(process.env.WEBHOOK_SECRET!)
-  let event: any
+  let event: ClerkWebhookEvent
 
   try {
     event = webhook.verify(body, {
       'svix-id': svixId,
       'svix-timestamp': svixTimestamp,
       'svix-signature': svixSignature,
-    }) as any
+    }) as ClerkWebhookEvent
   } catch (error) {
     console.error('Erreur de vérification du webhook Clerk:', error)
     return NextResponse.json(
@@ -45,7 +53,7 @@ export async function POST(request: NextRequest) {
           .from('users')
           .insert({
             clerk_user_id: id,
-            email: email_addresses[0]?.email_address,
+            email: email_addresses?.[0]?.email_address || null,
             subscription_status: 'free',
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
@@ -66,7 +74,7 @@ export async function POST(request: NextRequest) {
         const { error } = await supabaseAdmin
           .from('users')
           .update({
-            email: email_addresses[0]?.email_address,
+            email: email_addresses?.[0]?.email_address || null,
             updated_at: new Date().toISOString()
           })
           .eq('clerk_user_id', id)
