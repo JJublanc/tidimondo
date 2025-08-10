@@ -9,10 +9,19 @@ interface InvoiceWithSubscription extends Stripe.Invoice {
 }
 
 export async function POST(request: NextRequest) {
+  console.log('🎯 WEBHOOK STRIPE - Début du traitement')
+  
   const body = await request.text()
   const signature = (await headers()).get('stripe-signature')
 
+  console.log('📝 Webhook reçu:', {
+    hasSignature: !!signature,
+    bodyLength: body.length,
+    timestamp: new Date().toISOString()
+  })
+
   if (!signature) {
+    console.log('❌ Signature Stripe manquante')
     return NextResponse.json(
       { error: 'Signature Stripe manquante' },
       { status: 400 }
@@ -27,8 +36,9 @@ export async function POST(request: NextRequest) {
       signature,
       process.env.STRIPE_WEBHOOK_SECRET!
     )
+    console.log('✅ Webhook vérifié avec succès:', event.type)
   } catch (error) {
-    console.error('Erreur de vérification du webhook:', error)
+    console.error('❌ Erreur de vérification du webhook:', error)
     return NextResponse.json(
       { error: 'Signature webhook invalide' },
       { status: 400 }
@@ -39,18 +49,36 @@ export async function POST(request: NextRequest) {
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session
-        console.log('Checkout session completed:', session.id)
+        console.log('🎉 CHECKOUT SESSION COMPLETED:', {
+          sessionId: session.id,
+          customerId: session.customer,
+          subscriptionId: session.subscription,
+          metadata: session.metadata,
+          paymentStatus: session.payment_status
+        })
 
         // Récupérer l'abonnement
         if (session.subscription && session.customer) {
+          console.log('📋 Récupération de l\'abonnement Stripe...')
+          
           const subscription = await stripe.subscriptions.retrieve(
             session.subscription as string
           )
+          
+          console.log('💳 Abonnement Stripe récupéré:', {
+            id: subscription.id,
+            status: subscription.status,
+            customerId: subscription.customer
+          })
 
           // Mettre à jour l'utilisateur dans Supabase
           const clerkUserId = session.metadata?.clerk_user_id
+          console.log('🔍 Clerk User ID depuis metadata:', clerkUserId)
+          
           if (clerkUserId) {
-            const { error } = await supabaseAdmin
+            console.log('📝 Mise à jour Supabase en cours...')
+            
+            const { data, error } = await supabaseAdmin
               .from('users')
               .update({
                 stripe_customer_id: session.customer as string,
@@ -58,13 +86,30 @@ export async function POST(request: NextRequest) {
                 updated_at: new Date().toISOString()
               })
               .eq('clerk_user_id', clerkUserId)
+              .select()
 
             if (error) {
-              console.error('Erreur Supabase:', error)
+              console.error('❌ ERREUR SUPABASE:', {
+                error: error.message,
+                details: error.details,
+                hint: error.hint,
+                code: error.code
+              })
             } else {
-              console.log('Utilisateur mis à jour après checkout:', clerkUserId)
+              console.log('✅ UTILISATEUR MIS À JOUR:', {
+                clerkUserId,
+                data,
+                subscriptionStatus: subscription.status
+              })
             }
+          } else {
+            console.error('❌ CLERK_USER_ID MANQUANT dans les metadata')
           }
+        } else {
+          console.error('❌ SUBSCRIPTION OU CUSTOMER MANQUANT:', {
+            hasSubscription: !!session.subscription,
+            hasCustomer: !!session.customer
+          })
         }
         break
       }

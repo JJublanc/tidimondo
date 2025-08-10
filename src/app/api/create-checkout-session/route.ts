@@ -4,9 +4,13 @@ import { currentUser } from '@clerk/nextjs/server'
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('🚀 Début de la création de session checkout')
+    
     const user = await currentUser()
+    console.log('👤 Utilisateur récupéré:', user ? 'OK' : 'NON TROUVÉ')
     
     if (!user) {
+      console.log('❌ Utilisateur non autorisé')
       return NextResponse.json(
         { error: 'Non autorisé' },
         { status: 401 }
@@ -18,11 +22,32 @@ export async function POST(request: NextRequest) {
     const userId = formData.get('userId') as string
     const userEmail = formData.get('userEmail') as string
 
+    console.log('📋 Données reçues:', {
+      priceId,
+      userId,
+      userEmail,
+      appUrl: process.env.NEXT_PUBLIC_APP_URL
+    })
+
     if (!priceId) {
+      console.log('❌ Price ID manquant')
       return NextResponse.json(
         { error: 'Price ID manquant' },
         { status: 400 }
       )
+    }
+
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://tidimondo.com'
+    
+    console.log('🌐 URL de l\'application:', {
+      envVar: process.env.NEXT_PUBLIC_APP_URL,
+      finalUrl: appUrl
+    })
+
+    if (!appUrl.startsWith('http')) {
+      console.log('❌ URL invalide, ajout du protocole https')
+      const correctedUrl = `https://${appUrl}`
+      console.log('✅ URL corrigée:', correctedUrl)
     }
 
     // Créer ou récupérer le client Stripe
@@ -64,8 +89,8 @@ export async function POST(request: NextRequest) {
         },
       ],
       mode: 'subscription',
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?success=true`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing?canceled=true`,
+      success_url: `${appUrl}/dashboard?success=true`,
+      cancel_url: `${appUrl}/pricing?canceled=true`,
       metadata: {
         clerk_user_id: userId,
       },
