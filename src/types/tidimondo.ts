@@ -63,6 +63,7 @@ export interface Ingredient {
   prix_moyen_euro: number | null;
   saison: Saison[] | null;
   allergenes: Allergene[];
+  regime_alimentaire: RegimeAlimentaire[];
   created_at: string;
   updated_at: string;
 }
@@ -169,9 +170,65 @@ export interface SejourRepas {
   ordre_dans_journee: number;
   created_at: string;
   updated_at: string;
+  // Nouvelles propriétés pour la gestion détaillée des repas
+  composition?: RepasComposition;
   // Relations
   recette?: Recette;
 }
+
+// Types pour la composition détaillée des repas
+export interface RepasComposition {
+  // Pour les petits-déjeuners
+  petit_dejeuner?: PetitDejeunerComposition;
+  // Pour les repas principaux (déjeuner/dîner)
+  repas_principal?: RepasPrincipalComposition;
+  // Accompagnements communs
+  accompagnements?: AccompagnementsComposition;
+}
+
+export interface PetitDejeunerComposition {
+  ingredients: RepasIngredient[];
+  boissons: RepasBoisson[];
+}
+
+export interface RepasPrincipalComposition {
+  entree?: RepasPlat;
+  plat_principal?: RepasPlat;
+  dessert?: RepasPlat;
+}
+
+export interface AccompagnementsComposition {
+  pain?: RepasIngredient;
+  fromage?: RepasIngredient;
+  boissons?: RepasBoisson[];
+  autres_ingredients?: RepasIngredient[];
+}
+
+export interface RepasPlat {
+  recette_id?: string;
+  nom_libre?: string; // Pour les plats sans recette
+  notes?: string;
+}
+
+export interface RepasIngredient {
+  ingredient_id: string;
+  nom: string;
+  quantite: number;
+  unite: UniteRecette;
+  quantite_par_personne: boolean; // true si la quantité est par personne
+  notes?: string;
+}
+
+export interface RepasBoisson {
+  nom: string;
+  type: 'chaude' | 'froide';
+  quantite?: number;
+  unite?: 'ml' | 'l' | 'tasse' | 'verre';
+  quantite_par_personne: boolean;
+  notes?: string;
+}
+
+export type TypeBoisson = 'chaude' | 'froide';
 
 export interface ListeCourses {
   id: string;
@@ -346,7 +403,7 @@ export interface ApiError {
   error: {
     message: string;
     code?: string;
-    details?: any;
+    details?: unknown;
   };
 }
 

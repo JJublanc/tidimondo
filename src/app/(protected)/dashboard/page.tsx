@@ -15,12 +15,13 @@ import {
   HelpCircle,
   TrendingUp,
   Calendar,
-  Bell
+  Bell,
+  Package
 } from 'lucide-react'
 
 export default function DashboardPage() {
   const { user } = useUser()
-  const { hasProAccess, subscription, loading } = useSubscription()
+  const { hasProAccess, loading } = useSubscription()
 
   if (!user) {
     return <div>Chargement...</div>
@@ -181,6 +182,24 @@ export default function DashboardPage() {
         <div className="bg-white rounded-lg shadow p-6 mb-8">
           <h3 className="text-lg font-medium text-gray-900 mb-4">Actions rapides</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Link href="/sejours">
+              <Button className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
+                <Calendar className="h-4 w-4 mr-2" />
+                Mes Séjours
+              </Button>
+            </Link>
+            <Link href="/recettes">
+              <Button className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700">
+                <FileText className="h-4 w-4 mr-2" />
+                Mes Recettes
+              </Button>
+            </Link>
+            <Link href="/ingredients">
+              <Button className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700">
+                <Package className="h-4 w-4 mr-2" />
+                Mes Ingrédients
+              </Button>
+            </Link>
             {!hasProAccess && (
               <Link href="/pricing">
                 <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
@@ -195,10 +214,6 @@ export default function DashboardPage() {
                 Paramètres
               </Button>
             </Link>
-            <Button className="w-full" variant="outline">
-              <FileText className="h-4 w-4 mr-2" />
-              Documentation
-            </Button>
             <Button className="w-full" variant="outline">
               <HelpCircle className="h-4 w-4 mr-2" />
               Support
