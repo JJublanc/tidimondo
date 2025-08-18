@@ -136,9 +136,20 @@ export async function GET(
       throw error;
     }
 
+    // Transformer les données pour correspondre au type RecetteComplete
+    const recetteComplete = {
+      ...recette,
+      ingredients: recette.recette_ingredients || [],
+      ustensiles: recette.recette_ustensiles || []
+    };
+
+    // Supprimer les propriétés originales pour éviter la duplication
+    delete recetteComplete.recette_ingredients;
+    delete recetteComplete.recette_ustensiles;
+
     return NextResponse.json({
       success: true,
-      data: { recette }
+      data: { recette: recetteComplete }
     });
 
   } catch (error) {

@@ -183,10 +183,23 @@ export async function GET(request: NextRequest) {
       throw error;
     }
 
+    // Transformer les données pour correspondre au type RecetteComplete
+    const recettesComplete = (recettes || []).map(recette => ({
+      ...recette,
+      ingredients: recette.recette_ingredients || [],
+      ustensiles: recette.recette_ustensiles || []
+    }));
+
+    // Supprimer les propriétés originales pour éviter la duplication
+    recettesComplete.forEach(recette => {
+      delete recette.recette_ingredients;
+      delete recette.recette_ustensiles;
+    });
+
     return NextResponse.json({
       success: true,
       data: {
-        recettes: recettes || [],
+        recettes: recettesComplete,
         pagination: {
           page,
           limit,
