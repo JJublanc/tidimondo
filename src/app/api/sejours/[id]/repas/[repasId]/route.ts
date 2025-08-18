@@ -12,6 +12,7 @@ interface RepasFormData {
   repas_libre?: string;
   cout_estime?: number;
   ordre_dans_journee?: number;
+  composition?: any; // Composition JSON du repas
 }
 
 // PUT /api/sejours/[id]/repas/[repasId] - Modifier un repas
@@ -121,7 +122,7 @@ export async function PUT(
     const updateData: any = {};
     const allowedFields = [
       'recette_id', 'date_repas', 'type_repas', 'nombre_portions',
-      'notes', 'repas_libre', 'cout_estime', 'ordre_dans_journee'
+      'notes', 'repas_libre', 'cout_estime', 'ordre_dans_journee', 'composition'
     ];
 
     allowedFields.forEach(field => {

@@ -231,6 +231,72 @@ export default function PlanificationPage() {
     return getRepasByDateAndType(date, type);
   };
 
+  const getRepasDisplayContent = (repas: any, type: TypeRepas) => {
+    if (!repas) return null;
+
+    // Si c'est un repas libre, afficher simplement le nom
+    if (repas.repas_libre) {
+      return {
+        title: repas.repas_libre,
+        details: []
+      };
+    }
+
+    // Pour les déjeuners et dîners, afficher la composition détaillée
+    if (['dejeuner', 'diner'].includes(type) && repas.composition?.repas_principal) {
+      const composition = repas.composition.repas_principal;
+      const details = [];
+      
+      if (composition.entree) {
+        const entreeName = composition.entree.nom_libre ||
+          (recettes.find(r => r.id === composition.entree.recette_id)?.nom) || 'Entrée';
+        details.push(`Entrée: ${entreeName}`);
+      }
+      
+      if (composition.plat_principal) {
+        const platName = composition.plat_principal.nom_libre ||
+          (recettes.find(r => r.id === composition.plat_principal.recette_id)?.nom) || 'Plat principal';
+        details.push(`Plat: ${platName}`);
+      }
+      
+      if (composition.dessert) {
+        const dessertName = composition.dessert.nom_libre ||
+          (recettes.find(r => r.id === composition.dessert.recette_id)?.nom) || 'Dessert';
+        details.push(`Dessert: ${dessertName}`);
+      }
+
+      return {
+        title: details.length > 0 ? 'Repas composé' : (repas.recette?.nom || 'Repas'),
+        details: details
+      };
+    }
+
+    // Pour les petits-déjeuners, afficher un résumé des ingrédients/boissons
+    if (type === 'petit_dejeuner' && repas.composition?.petit_dejeuner) {
+      const composition = repas.composition.petit_dejeuner;
+      const details = [];
+      
+      if (composition.ingredients?.length > 0) {
+        details.push(`${composition.ingredients.length} ingrédient(s)`);
+      }
+      
+      if (composition.boissons?.length > 0) {
+        details.push(`${composition.boissons.length} boisson(s)`);
+      }
+
+      return {
+        title: 'Petit-déjeuner composé',
+        details: details
+      };
+    }
+
+    // Pour les autres types de repas (collation, apéro), afficher le nom de la recette ou repas libre
+    return {
+      title: repas.recette?.nom || repas.repas_libre || 'Repas',
+      details: []
+    };
+  };
+
   if (sejourLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -346,6 +412,8 @@ export default function PlanificationPage() {
                   </td>
                   {typesRepas.map((type) => {
                     const repas = getRepasForSlot(date, type.type);
+                    const displayContent = getRepasDisplayContent(repas, type.type);
+                    
                     return (
                       <td key={type.type} className="px-6 py-4">
                         <button
@@ -356,18 +424,27 @@ export default function PlanificationPage() {
                               : 'border-dashed border-gray-200 hover:border-blue-300 hover:bg-blue-50'
                           }`}
                         >
-                          {repas ? (
+                          {repas && displayContent ? (
                             <div className="flex items-start gap-2">
                               <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
                               <div className="flex-1">
                                 <div className="text-sm font-medium text-gray-800 mb-1">
-                                  {repas.recette?.nom || repas.repas_libre}
+                                  {displayContent.title}
                                 </div>
-                                <div className="text-xs text-gray-600">
+                                {displayContent.details.length > 0 && (
+                                  <div className="text-xs text-gray-600 space-y-0.5">
+                                    {displayContent.details.map((detail, index) => (
+                                      <div key={index} className="truncate">
+                                        {detail}
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                                <div className="text-xs text-gray-500 mt-1">
                                   {repas.nombre_portions} portion(s)
                                 </div>
                                 {repas.notes && (
-                                  <div className="text-xs text-gray-500 mt-1 truncate">
+                                  <div className="text-xs text-gray-400 mt-1 truncate">
                                     {repas.notes}
                                   </div>
                                 )}

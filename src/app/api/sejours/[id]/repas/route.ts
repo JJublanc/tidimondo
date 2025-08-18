@@ -12,6 +12,7 @@ interface RepasFormData {
   repas_libre?: string;
   cout_estime?: number;
   ordre_dans_journee?: number;
+  composition?: any; // Composition JSON du repas
 }
 
 // GET /api/sejours/[id]/repas - Récupérer tous les repas d'un séjour
@@ -207,6 +208,7 @@ export async function POST(
       repas_libre: body.repas_libre || null,
       cout_estime: body.cout_estime || null,
       ordre_dans_journee: body.ordre_dans_journee || 0,
+      composition: body.composition || null,
     };
 
     const { data: repas, error: repasError } = await supabase
