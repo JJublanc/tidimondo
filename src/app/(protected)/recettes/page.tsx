@@ -60,10 +60,13 @@ export default function RecettesPage() {
   // Compter les filtres actifs
   const activeFiltersCount = Object.values(filters).filter(value => value && value !== 'created_at' && value !== 'desc').length + (searchQuery ? 1 : 0);
 
-  const handleDeleteRecette = async (recette: RecetteComplete) => {
+  const handleDeleteRecette = async (recetteId: string) => {
+    const recette = recettes.find(r => r.id === recetteId);
+    if (!recette) return;
+    
     if (window.confirm(`Êtes-vous sûr de vouloir supprimer la recette "${recette.nom}" ?`)) {
       try {
-        await deleteRecette(recette.id);
+        await deleteRecette(recetteId);
         // Recharger les recettes après suppression
         fetchRecettes();
       } catch (error) {
@@ -411,11 +414,7 @@ export default function RecettesPage() {
                   <RecetteCard
                     key={recette.id}
                     recette={recette}
-                    layout={layout}
                     onDelete={handleDeleteRecette}
-                    onEdit={(recette) => {
-                      window.location.href = `/recettes/${recette.id}/modifier`;
-                    }}
                   />
                 ))}
               </div>

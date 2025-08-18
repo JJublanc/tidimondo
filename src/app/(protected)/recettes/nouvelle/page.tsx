@@ -272,7 +272,7 @@ export default function NouvelleRecettePage() {
     const newIngredient: RecetteIngredientWithData = {
       ingredient_id: ingredient.id,
       quantite: 1,
-      unite: 'piece',
+      unite: ingredient.unite_base, // Utiliser l'unité de base de l'ingrédient
       optionnel: false,
       ordre_affichage: formData.ingredients.length + 1,
       ingredient: ingredient // Stocker les données de l'ingrédient pour l'affichage

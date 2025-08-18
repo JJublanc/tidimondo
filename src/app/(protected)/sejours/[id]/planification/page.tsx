@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { Home } from 'lucide-react';
+import { Home, Check } from 'lucide-react';
 import { useSejour } from '@/hooks/useSejours';
 import { useSejourRepas } from '@/hooks/useSejourRepas';
 import { useRecettes } from '@/hooks/useRecettes';
@@ -350,21 +350,28 @@ export default function PlanificationPage() {
                       <td key={type.type} className="px-6 py-4">
                         <button
                           onClick={() => openRepasModal(date, type.type)}
-                          className="w-full text-left p-3 rounded-lg border-2 border-dashed border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-colors min-h-[80px] flex flex-col justify-center"
+                          className={`w-full text-left p-3 rounded-lg border-2 transition-colors min-h-[80px] flex flex-col justify-center ${
+                            repas
+                              ? 'border-solid border-green-200 bg-green-50 hover:border-green-300 hover:bg-green-100'
+                              : 'border-dashed border-gray-200 hover:border-blue-300 hover:bg-blue-50'
+                          }`}
                         >
                           {repas ? (
-                            <div>
-                              <div className="text-sm font-medium text-gray-900 mb-1">
-                                {repas.recette?.nom || repas.repas_libre}
-                              </div>
-                              <div className="text-xs text-gray-500">
-                                {repas.nombre_portions} portion(s)
-                              </div>
-                              {repas.notes && (
-                                <div className="text-xs text-gray-400 mt-1 truncate">
-                                  {repas.notes}
+                            <div className="flex items-start gap-2">
+                              <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                              <div className="flex-1">
+                                <div className="text-sm font-medium text-gray-800 mb-1">
+                                  {repas.recette?.nom || repas.repas_libre}
                                 </div>
-                              )}
+                                <div className="text-xs text-gray-600">
+                                  {repas.nombre_portions} portion(s)
+                                </div>
+                                {repas.notes && (
+                                  <div className="text-xs text-gray-500 mt-1 truncate">
+                                    {repas.notes}
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           ) : (
                             <div className="text-sm text-gray-400 text-center">
@@ -623,8 +630,11 @@ export default function PlanificationPage() {
                       type="number"
                       min="1"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      value={repasForm.nombre_portions}
-                      onChange={(e) => setRepasForm(prev => ({ ...prev, nombre_portions: parseInt(e.target.value) }))}
+                      value={repasForm.nombre_portions || ''}
+                      onChange={(e) => setRepasForm(prev => ({
+                        ...prev,
+                        nombre_portions: e.target.value ? parseInt(e.target.value) : 1
+                      }))}
                     />
                   </div>
 
