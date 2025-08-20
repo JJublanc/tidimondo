@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Home } from 'lucide-react';
+import { Header } from '@/components/layout/Header';
 import { useSejours } from '@/hooks/useSejours';
 import { SejourFilters, StatutSejour, TypeSejour } from '@/types/tidimondo';
 import { Button } from '@/components/ui/button';
@@ -88,29 +89,27 @@ export default function SejoursPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* En-tête */}
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Mes Séjours</h1>
-          <p className="text-gray-600 mt-2">
-            Organisez et planifiez vos séjours avec leurs repas
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Link href="/dashboard">
-            <Button variant="outline" size="sm">
-              <Home className="h-4 w-4 mr-2" />
-              Dashboard
-            </Button>
-          </Link>
-          <Link href="/sejours/nouveau">
-            <Button className="bg-blue-600 hover:bg-blue-700">
+    <div className="min-h-screen bg-gray-50">
+      <Header
+        title="Mes Séjours"
+        backLink="/dashboard"
+        backText="Dashboard"
+      />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header Section */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+          <div>
+            <p className="text-gray-600">
+              Organisez et planifiez vos séjours avec leurs repas
+            </p>
+          </div>
+          <Link href="/sejours/nouveau" className="mt-4 sm:mt-0">
+            <Button className="bg-green-600 hover:bg-green-700">
               + Nouveau séjour
             </Button>
           </Link>
         </div>
-      </div>
 
       {/* Filtres */}
       <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
@@ -307,6 +306,7 @@ export default function SejoursPage() {
           </Button>
         </div>
       )}
+      </div>
     </div>
   );
 }

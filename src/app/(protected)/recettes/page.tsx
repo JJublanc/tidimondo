@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Plus, Search, Filter, Grid, List, AlertCircle, Home, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Header } from '@/components/layout/Header';
 import { RecetteCard } from '@/components/recettes/RecetteCard';
 import { useRecettes } from '@/hooks/useRecettes';
 import { useSubscription } from '@/hooks/useSubscription';
@@ -80,81 +81,73 @@ export default function RecettesPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Mes Recettes</h1>
-              <p className="text-gray-600 mt-1">
-                Gérez vos recettes personnalisées
-                {!hasProAccess && (
-                  <span className="text-sm text-orange-600 ml-2">
-                    ({recettes.length}/5 recettes utilisées)
-                  </span>
-                )}
-              </p>
-            </div>
-            
-            <div className="flex items-center gap-3">
-              <Link href="/dashboard">
-                <Button variant="outline" size="sm">
-                  <Home className="h-4 w-4 mr-2" />
-                  Dashboard
+      <Header
+        title="Mes Recettes"
+        backLink="/dashboard"
+        backText="Dashboard"
+      />
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header Section */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+          <div>
+            <p className="text-gray-600">
+              Gérez vos recettes personnalisées
+              {!hasProAccess && (
+                <span className="text-sm text-orange-600 ml-2">
+                  ({recettes.length}/5 recettes utilisées)
+                </span>
+              )}
+            </p>
+          </div>
+          <div className="mt-4 sm:mt-0">
+            {canCreateRecette ? (
+              <Link href="/recettes/nouvelle">
+                <Button className="bg-green-600 hover:bg-green-700">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nouvelle recette
                 </Button>
               </Link>
-              
-              {canCreateRecette ? (
-                <Link href="/recettes/nouvelle">
-                  <Button>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Nouvelle recette
-                  </Button>
-                </Link>
-              ) : (
-                <div className="relative">
-                  <Button disabled className="opacity-50">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Nouvelle recette
-                  </Button>
-                  <div className="absolute -top-2 -right-2">
-                    <Link href="/pricing">
-                      <Button size="sm" className="bg-orange-500 hover:bg-orange-600 text-xs px-2 py-1">
-                        Pro
-                      </Button>
-                    </Link>
-                  </div>
+            ) : (
+              <div className="relative">
+                <Button disabled className="opacity-50">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nouvelle recette
+                </Button>
+                <div className="absolute -top-2 -right-2">
+                  <Link href="/pricing">
+                    <Button size="sm" className="bg-green-600 hover:bg-green-700 text-xs px-2 py-1">
+                      Pro
+                    </Button>
+                  </Link>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
-      </div>
 
-      {/* Limitation freemium banner */}
-      {!hasProAccess && recettes.length >= 5 && (
-        <div className="bg-orange-50 border-l-4 border-orange-400 p-4 mx-4 mt-4 rounded-r-lg">
-          <div className="flex items-center">
-            <AlertCircle className="h-5 w-5 text-orange-400 mr-3" />
-            <div className="flex-1">
-              <p className="text-sm text-orange-700">
-                <strong>Limite atteinte :</strong> Vous avez créé 5 recettes (limite du plan gratuit).
-              </p>
-              <p className="text-sm text-orange-600 mt-1">
-                Passez au plan Pro pour créer des recettes illimitées et débloquer toutes les fonctionnalités.
-              </p>
+        {/* Limitation freemium banner */}
+        {!hasProAccess && recettes.length >= 5 && (
+          <div className="bg-orange-50 border-l-4 border-orange-400 p-4 mb-6 rounded-r-lg">
+            <div className="flex items-center">
+              <AlertCircle className="h-5 w-5 text-orange-400 mr-3" />
+              <div className="flex-1">
+                <p className="text-sm text-orange-700">
+                  <strong>Limite atteinte :</strong> Vous avez créé 5 recettes (limite du plan gratuit).
+                </p>
+                <p className="text-sm text-orange-600 mt-1">
+                  Passez au plan Pro pour créer des recettes illimitées et débloquer toutes les fonctionnalités.
+                </p>
+              </div>
+              <Link href="/pricing">
+                <Button size="sm" className="bg-green-600 hover:bg-green-700 ml-4">
+                  Passer au Pro
+                </Button>
+              </Link>
             </div>
-            <Link href="/pricing">
-              <Button size="sm" className="bg-orange-500 hover:bg-orange-600 ml-4">
-                Passer au Pro
-              </Button>
-            </Link>
           </div>
-        </div>
-      )}
-
-      {/* Contenu principal */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        )}
         {/* Barre de recherche et filtres */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
           <div className="flex flex-col sm:flex-row gap-4">

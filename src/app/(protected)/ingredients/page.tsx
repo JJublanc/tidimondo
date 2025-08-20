@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Plus, Search, Filter, Edit, Trash2, Home, Package, AlertCircle } from 'lucide-react';
+import { Plus, Search, Filter, Edit, Trash2, Package, AlertCircle, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Header } from '@/components/layout/Header';
 import { useIngredients } from '@/hooks/useIngredients';
 import { useDebounce } from '@/hooks/useDebounce';
 import type { Ingredient, CategorieIngredient } from '@/types/tidimondo';
@@ -116,36 +117,30 @@ export default function IngredientsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Mes Ingrédients</h1>
-              <p className="text-gray-600 mt-1">
-                Gérez votre base d'ingrédients personnalisés
-              </p>
-            </div>
-            
-            <div className="flex items-center gap-3">
-              <Link href="/dashboard">
-                <Button variant="outline" size="sm">
-                  <Home className="h-4 w-4 mr-2" />
-                  Dashboard
-                </Button>
-              </Link>
-              
-              <Button onClick={() => setShowCreateForm(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Nouvel ingrédient
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <Header
+        title="Mes Ingrédients"
+        backLink="/dashboard"
+        backText="Dashboard"
+      />
 
       {/* Contenu principal */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header Section */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+          <div>
+            <p className="text-gray-600">
+              Gérez votre base d'ingrédients personnalisés
+            </p>
+          </div>
+          <Button
+            onClick={() => setShowCreateForm(true)}
+            className="mt-4 sm:mt-0 bg-green-600 hover:bg-green-700"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Nouvel ingrédient
+          </Button>
+        </div>
+
         {/* Barre de recherche et filtres */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
           <div className="flex flex-col sm:flex-row gap-4">

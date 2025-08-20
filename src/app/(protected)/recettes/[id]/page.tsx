@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Edit, Trash2, Clock, Users, ChefHat, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Header } from '@/components/layout/Header';
 import { useRecettes } from '@/hooks/useRecettes';
 import type { RecetteComplete } from '@/types/tidimondo';
 
@@ -107,54 +108,38 @@ export default function RecetteDetailPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between py-6">
-            <div className="flex items-center gap-4">
-              <Link href="/recettes">
-                <Button variant="outline" size="sm">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Retour aux recettes
-                </Button>
-              </Link>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">{recette.nom}</h1>
-                <p className="text-gray-600 mt-1">Détails de la recette</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-3">
-              <Link href="/dashboard">
-                <Button variant="outline" size="sm">
-                  <Home className="h-4 w-4 mr-2" />
-                  Dashboard
-                </Button>
-              </Link>
-              
-              <Link href={`/recettes/${recette.id}/modifier`}>
-                <Button variant="outline" size="sm">
-                  <Edit className="h-4 w-4 mr-2" />
-                  Modifier
-                </Button>
-              </Link>
-              
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleDelete}
-                className="text-red-600 hover:text-red-700 hover:bg-red-50"
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Supprimer
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <Header
+        title={recette.nom}
+        backLink="/recettes"
+        backText="Retour aux recettes"
+      />
 
       {/* Contenu */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Actions */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+          <div>
+            <p className="text-gray-600">Détails de la recette</p>
+          </div>
+          <div className="flex items-center gap-3 mt-4 sm:mt-0">
+            <Link href={`/recettes/${recette.id}/modifier`}>
+              <Button variant="outline" size="sm" className="bg-green-600 hover:bg-green-700 text-white border-green-600">
+                <Edit className="h-4 w-4 mr-2" />
+                Modifier
+              </Button>
+            </Link>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDelete}
+              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Supprimer
+            </Button>
+          </div>
+        </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Informations principales */}
           <div className="lg:col-span-2 space-y-6">

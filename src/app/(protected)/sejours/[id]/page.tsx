@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { Home } from 'lucide-react';
+import { Header } from '@/components/layout/Header';
 import { useSejour } from '@/hooks/useSejours';
 import { useSejourRepas } from '@/hooks/useSejourRepas';
 import { StatutSejour, TypeRepas, ListeCoursesContenu, ListeCoursesIngredient, CategorieIngredient } from '@/types/tidimondo';
@@ -237,40 +238,42 @@ export default function SejourDetailPage() {
   const dates = generateDateRange();
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* En-tête */}
-      <div className="flex justify-between items-start mb-8">
-        <div>
-          <div className="flex items-center space-x-4 mb-2">
-            <h1 className="text-3xl font-bold text-gray-900">{sejour.nom}</h1>
-            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatutBadgeClass(sejour.statut)}`}>
-              {getStatutLabel(sejour.statut)}
-            </span>
+    <div className="min-h-screen bg-gray-50">
+      <Header
+        title={sejour.nom}
+        backLink="/sejours"
+        backText="Retour aux séjours"
+      />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header Section */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+          <div>
+            <div className="flex items-center space-x-4 mb-2">
+              <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatutBadgeClass(sejour.statut)}`}>
+                {getStatutLabel(sejour.statut)}
+              </span>
+            </div>
+            <p className="text-gray-600">
+              {formatDate(sejour.date_debut)} - {formatDate(sejour.date_fin)}
+            </p>
+            {sejour.lieu && (
+              <p className="text-gray-600">📍 {sejour.lieu}</p>
+            )}
           </div>
-          <p className="text-gray-600">
-            {formatDate(sejour.date_debut)} - {formatDate(sejour.date_fin)}
-          </p>
-          {sejour.lieu && (
-            <p className="text-gray-600">📍 {sejour.lieu}</p>
-          )}
+          <div className="flex space-x-3 mt-4 sm:mt-0">
+            <Link href={`/sejours/${sejourId}/modifier`}>
+              <Button variant="outline" className="bg-green-600 hover:bg-green-700 text-white border-green-600">
+                Modifier
+              </Button>
+            </Link>
+            <Link href={`/sejours/${sejourId}/planification`}>
+              <Button className="bg-green-600 hover:bg-green-700">
+                Planifier les repas
+              </Button>
+            </Link>
+          </div>
         </div>
-        <div className="flex space-x-3">
-          <Link href="/dashboard">
-            <Button variant="outline" size="sm">
-              <Home className="h-4 w-4 mr-2" />
-              Dashboard
-            </Button>
-          </Link>
-          <Link href={`/sejours/${sejourId}/modifier`}>
-            <Button variant="outline">Modifier</Button>
-          </Link>
-          <Link href={`/sejours/${sejourId}/planification`}>
-            <Button className="bg-blue-600 hover:bg-blue-700">
-              Planifier les repas
-            </Button>
-          </Link>
-        </div>
-      </div>
 
       {/* Navigation par onglets */}
       <div className="border-b border-gray-200 mb-8">
@@ -734,6 +737,7 @@ export default function SejourDetailPage() {
           )}
         </div>
       )}
+      </div>
     </div>
   );
 }
