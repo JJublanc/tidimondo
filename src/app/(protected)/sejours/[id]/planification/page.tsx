@@ -365,6 +365,11 @@ export default function PlanificationPage() {
               Dashboard
             </Button>
           </Link>
+          <Link href={`/sejours/${sejourId}/liste-courses`}>
+            <Button className="bg-green-600 hover:bg-green-700">
+              🛒 Liste de courses
+            </Button>
+          </Link>
           <Link href={`/sejours/${sejourId}`}>
             <Button variant="outline">Retour au séjour</Button>
           </Link>

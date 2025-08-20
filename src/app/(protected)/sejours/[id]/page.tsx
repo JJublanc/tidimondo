@@ -1,13 +1,38 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { Home } from 'lucide-react';
 import { useSejour } from '@/hooks/useSejours';
 import { useSejourRepas } from '@/hooks/useSejourRepas';
-import { StatutSejour, TypeRepas } from '@/types/tidimondo';
+import { StatutSejour, TypeRepas, ListeCoursesContenu, ListeCoursesIngredient, CategorieIngredient } from '@/types/tidimondo';
 import { Button } from '@/components/ui/button';
+
+interface ListeCoursesData {
+  contenu: ListeCoursesContenu;
+  cout_total_estime: number;
+  sejour: {
+    id: string;
+    nom: string;
+    date_debut: string;
+    date_fin: string;
+    nombre_participants: number;
+  };
+}
+
+const categorieLabels: Record<CategorieIngredient, string> = {
+  'legume': '🥬 Légumes',
+  'fruit': '🍎 Fruits',
+  'viande': '🥩 Viandes',
+  'poisson': '🐟 Poissons',
+  'feculent': '🍞 Féculents',
+  'produit_laitier': '🧀 Produits laitiers',
+  'epice': '🌶️ Épices',
+  'condiment': '🧂 Condiments',
+  'boisson': '🥤 Boissons',
+  'autre': '📦 Autres'
+};
 
 export default function SejourDetailPage() {
   const params = useParams();
@@ -17,6 +42,83 @@ export default function SejourDetailPage() {
   const { repas, getRepasGroupedByDate, getStatistiques } = useSejourRepas(sejourId);
   
   const [activeTab, setActiveTab] = useState<'overview' | 'planning' | 'participants' | 'courses'>('overview');
+  
+  // État pour la liste de courses
+  const [listeCoursesData, setListeCoursesData] = useState<ListeCoursesData | null>(null);
+  const [loadingListeCourses, setLoadingListeCourses] = useState(false);
+  const [errorListeCourses, setErrorListeCourses] = useState<string | null>(null);
+  const [ingredientsModifies, setIngredientsModifies] = useState<Record<string, { quantite: number; unite: string }>>({});
+
+  // Fonctions pour la liste de courses
+  const fetchListeCourses = async () => {
+    try {
+      setLoadingListeCourses(true);
+      setErrorListeCourses(null);
+      const response = await fetch(`/api/sejours/${sejourId}/liste-courses`);
+      
+      if (!response.ok) {
+        throw new Error('Erreur lors de la récupération de la liste de courses');
+      }
+      
+      const result = await response.json();
+      setListeCoursesData(result.data);
+    } catch (err) {
+      setErrorListeCourses(err instanceof Error ? err.message : 'Une erreur est survenue');
+    } finally {
+      setLoadingListeCourses(false);
+    }
+  };
+
+  const updateQuantite = (ingredientId: string, nouvelleQuantite: number, unite: string) => {
+    setIngredientsModifies(prev => ({
+      ...prev,
+      [ingredientId]: { quantite: nouvelleQuantite, unite }
+    }));
+  };
+
+  const getQuantiteAffichee = (ingredient: ListeCoursesIngredient) => {
+    const modif = ingredientsModifies[ingredient.ingredient_id];
+    return modif ? modif.quantite : ingredient.quantite_totale;
+  };
+
+  const getUniteAffichee = (ingredient: ListeCoursesIngredient) => {
+    const modif = ingredientsModifies[ingredient.ingredient_id];
+    return modif ? modif.unite : ingredient.unite;
+  };
+
+  const exporterPDF = async () => {
+    try {
+      const response = await fetch(`/api/sejours/${sejourId}/liste-courses/export-pdf`);
+      
+      if (!response.ok) {
+        throw new Error('Erreur lors de l\'export PDF');
+      }
+      
+      const htmlContent = await response.text();
+      
+      // Ouvrir une nouvelle fenêtre avec le contenu HTML pour impression
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+        printWindow.document.write(htmlContent);
+        printWindow.document.close();
+        
+        // Attendre que le contenu soit chargé puis lancer l'impression
+        printWindow.onload = () => {
+          printWindow.print();
+        };
+      }
+    } catch (err) {
+      console.error('Erreur lors de l\'export PDF:', err);
+      alert('Erreur lors de l\'export PDF');
+    }
+  };
+
+  // Charger la liste de courses quand l'onglet est activé
+  useEffect(() => {
+    if (activeTab === 'courses' && !listeCoursesData && !loadingListeCourses) {
+      fetchListeCourses();
+    }
+  }, [activeTab, sejourId]);
 
   const getStatutBadgeClass = (statut: StatutSejour) => {
     switch (statut) {
@@ -361,11 +463,12 @@ export default function SejourDetailPage() {
                     📅 Planifier les repas
                   </Button>
                 </Link>
-                <Button variant="outline" className="w-full justify-start" disabled>
-                  🛒 Générer liste de courses
-                </Button>
-                <Button variant="outline" className="w-full justify-start" disabled>
-                  📄 Exporter en PDF
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() => setActiveTab('courses')}
+                >
+                  🛒 Voir liste de courses
                 </Button>
               </div>
             </div>
@@ -489,20 +592,146 @@ export default function SejourDetailPage() {
       )}
 
       {activeTab === 'courses' && (
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold">Liste de courses</h2>
-            <Button disabled>Générer la liste</Button>
-          </div>
-          
-          <div className="text-center py-12">
-            <div className="text-gray-500 text-lg mb-4">
-              Fonctionnalité en cours de développement
+        <div className="space-y-6">
+          {loadingListeCourses ? (
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+              <div className="text-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p className="text-gray-600">Génération de la liste de courses...</p>
+              </div>
             </div>
-            <p className="text-gray-400 text-sm">
-              La génération automatique de liste de courses sera disponible prochainement
-            </p>
-          </div>
+          ) : errorListeCourses ? (
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+              <div className="text-center py-12">
+                <div className="text-red-600 text-xl mb-4">❌ Erreur</div>
+                <p className="text-gray-600 mb-4">{errorListeCourses}</p>
+                <Button onClick={fetchListeCourses}>
+                  Réessayer
+                </Button>
+              </div>
+            </div>
+          ) : !listeCoursesData ? (
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-semibold">Liste de courses</h2>
+                <Button onClick={fetchListeCourses}>
+                  Générer la liste
+                </Button>
+              </div>
+              
+              <div className="text-center py-12">
+                <div className="text-gray-500 text-lg mb-4">
+                  Générez automatiquement votre liste de courses
+                </div>
+                <p className="text-gray-400 text-sm">
+                  Basée sur votre planification de repas
+                </p>
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* En-tête avec résumé */}
+              <div className="bg-white rounded-lg shadow-sm border p-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-semibold">📝 Liste de courses</h2>
+                  <div className="flex space-x-3">
+                    <Button onClick={fetchListeCourses} variant="outline">
+                      🔄 Actualiser
+                    </Button>
+                    <Button
+                      onClick={exporterPDF}
+                      className="bg-red-600 hover:bg-red-700 text-white"
+                    >
+                      📄 Export PDF
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Résumé */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-blue-600">{listeCoursesData.contenu.resume.nombre_participants}</div>
+                    <div className="text-sm text-gray-600">Participants</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-green-600">{listeCoursesData.contenu.resume.nombre_repas}</div>
+                    <div className="text-sm text-gray-600">Repas</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-purple-600">{listeCoursesData.contenu.resume.nombre_recettes}</div>
+                    <div className="text-sm text-gray-600">Recettes</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-orange-600">{listeCoursesData.contenu.ingredients.length}</div>
+                    <div className="text-sm text-gray-600">Ingrédients</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Liste des ingrédients par catégorie */}
+              {Object.entries(listeCoursesData.contenu.categories).map(([categorie, ingredients]) => {
+                if (!ingredients || ingredients.length === 0) return null;
+                
+                return (
+                  <div key={categorie} className="bg-white rounded-lg shadow-sm border">
+                    <div className="p-4 border-b border-gray-200">
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        {categorieLabels[categorie as CategorieIngredient] || categorie}
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        {ingredients.length} ingrédient{ingredients.length > 1 ? 's' : ''}
+                      </p>
+                    </div>
+                    
+                    <div className="p-4">
+                      <div className="space-y-3">
+                        {ingredients.map((ingredient) => (
+                          <div
+                            key={ingredient.ingredient_id}
+                            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                          >
+                            <div className="flex-1">
+                              <div className="font-medium text-gray-900">
+                                {ingredient.nom}
+                              </div>
+                              {ingredient.recettes_utilisees.length > 0 && (
+                                <div className="text-sm text-gray-600 mt-1">
+                                  Utilisé dans : {ingredient.recettes_utilisees.join(', ')}
+                                </div>
+                              )}
+                              {ingredient.notes.length > 0 && (
+                                <div className="text-xs text-gray-500 mt-1">
+                                  Notes : {ingredient.notes.join(', ')}
+                                </div>
+                              )}
+                            </div>
+                            
+                            <div className="flex items-center space-x-2">
+                              <input
+                                type="number"
+                                min="0"
+                                step="0.1"
+                                value={getQuantiteAffichee(ingredient)}
+                                onChange={(e) => updateQuantite(
+                                  ingredient.ingredient_id,
+                                  parseFloat(e.target.value) || 0,
+                                  getUniteAffichee(ingredient)
+                                )}
+                                className="w-20 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              />
+                              <span className="text-sm text-gray-600 min-w-[3rem]">
+                                {getUniteAffichee(ingredient)}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </>
+          )}
         </div>
       )}
     </div>
