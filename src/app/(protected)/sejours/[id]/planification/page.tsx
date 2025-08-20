@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Home, Check } from 'lucide-react';
@@ -9,9 +9,8 @@ import { useSejourRepas } from '@/hooks/useSejourRepas';
 import { useRecettes } from '@/hooks/useRecettes';
 import { TypeRepas, Recette, RepasComposition } from '@/types/tidimondo';
 import { Button } from '@/components/ui/button';
-import PetitDejeunerForm from '@/components/sejours/PetitDejeunerForm';
+import RepasSimpleForm from '@/components/sejours/RepasSimpleForm';
 import RepasPrincipalForm from '@/components/sejours/RepasPrincipalForm';
-import AccompagnementsForm from '@/components/sejours/AccompagnementsForm';
 
 interface RepasFormData {
   recette_id?: string;
@@ -48,6 +47,28 @@ export default function PlanificationPage() {
     ordre_dans_journee: 0,
     composition: undefined,
   });
+
+  // Callback pour la mise à jour de la composition des repas simples
+  const handleRepasSimpleChange = useCallback((composition: any) => {
+    setRepasForm(prev => ({
+      ...prev,
+      composition: {
+        ...prev.composition,
+        repas_simple: composition,
+      },
+    }));
+  }, []);
+
+  // Callback pour la mise à jour de la composition des repas principaux
+  const handleRepasPrincipalChange = useCallback((composition: any) => {
+    setRepasForm(prev => ({
+      ...prev,
+      composition: {
+        ...prev.composition,
+        repas_principal: composition,
+      },
+    }));
+  }, []);
 
   const typesRepas: { type: TypeRepas; label: string; ordre: number }[] = [
     { type: 'petit_dejeuner', label: 'Petit-déjeuner', ordre: 1 },
@@ -127,9 +148,8 @@ export default function PlanificationPage() {
 
     try {
       // Validation selon le type de repas
-      if (selectedType === 'petit_dejeuner') {
-        if (!repasForm.composition?.petit_dejeuner?.ingredients?.length &&
-            !repasForm.composition?.petit_dejeuner?.boissons?.length &&
+      if (['petit_dejeuner', 'collation', 'apero'].includes(selectedType)) {
+        if (!repasForm.composition?.repas_simple?.ingredients?.length &&
             !repasForm.repas_libre?.trim()) {
           throw new Error('Veuillez ajouter des ingrédients/boissons ou saisir un repas libre');
         }
@@ -271,26 +291,34 @@ export default function PlanificationPage() {
       };
     }
 
-    // Pour les petits-déjeuners, afficher un résumé des ingrédients/boissons
-    if (type === 'petit_dejeuner' && repas.composition?.petit_dejeuner) {
-      const composition = repas.composition.petit_dejeuner;
+    // Pour les petits-déjeuners, collations et apéros avec composition simple
+    if (['petit_dejeuner', 'collation', 'apero'].includes(type) && repas.composition?.repas_simple) {
+      const composition = repas.composition.repas_simple;
       const details = [];
       
       if (composition.ingredients?.length > 0) {
-        details.push(`${composition.ingredients.length} ingrédient(s)`);
-      }
-      
-      if (composition.boissons?.length > 0) {
-        details.push(`${composition.boissons.length} boisson(s)`);
+        // Afficher les noms des premiers ingrédients
+        const ingredientNames = composition.ingredients.slice(0, 3).map((ing: any) => ing.nom).filter(Boolean);
+        if (ingredientNames.length > 0) {
+          details.push(ingredientNames.join(', '));
+          if (composition.ingredients.length > 3) {
+            details.push(`+${composition.ingredients.length - 3} autre(s)`);
+          }
+        } else {
+          details.push(`${composition.ingredients.length} élément(s)`);
+        }
       }
 
+      const typeLabel = type === 'petit_dejeuner' ? 'Petit-déjeuner' :
+                       type === 'collation' ? 'Collation' : 'Apéro';
+
       return {
-        title: 'Petit-déjeuner composé',
+        title: `${typeLabel} composé`,
         details: details
       };
     }
 
-    // Pour les autres types de repas (collation, apéro), afficher le nom de la recette ou repas libre
+    // Pour les autres types de repas, afficher le nom de la recette ou repas libre
     return {
       title: repas.recette?.nom || repas.repas_libre || 'Repas',
       details: []
@@ -497,20 +525,19 @@ export default function PlanificationPage() {
               )}
 
               {/* Contenu selon le type de repas */}
-              {selectedType === 'petit_dejeuner' ? (
+              {['petit_dejeuner', 'collation', 'apero'].includes(selectedType) ? (
                 <div className="space-y-6">
-                  {/* Composition du petit-déjeuner */}
-                  <PetitDejeunerForm
-                    composition={repasForm.composition?.petit_dejeuner}
+                  {/* Composition simplifiée */}
+                  <RepasSimpleForm
+                    composition={repasForm.composition?.repas_simple}
                     nombreParticipants={sejour?.nombre_participants || 1}
                     participants={sejour?.participants || []}
-                    onChange={(composition) => setRepasForm(prev => ({
-                      ...prev,
-                      composition: {
-                        ...prev.composition,
-                        petit_dejeuner: composition,
-                      },
-                    }))}
+                    placeholder={
+                      selectedType === 'petit_dejeuner' ? 'Rechercher des ingrédients pour le petit-déjeuner (pain, confiture, café...)' :
+                      selectedType === 'collation' ? 'Rechercher des ingrédients pour la collation (fruits, biscuits, boissons...)' :
+                      'Rechercher des ingrédients pour l\'apéro (chips, olives, boissons...)'
+                    }
+                    onChange={handleRepasSimpleChange}
                   />
                   
                   {/* Option repas libre */}
@@ -518,7 +545,13 @@ export default function PlanificationPage() {
                     <h3 className="text-lg font-medium mb-4">Ou repas libre</h3>
                     <input
                       type="text"
-                      placeholder="Ex: Petit-déjeuner à l'hôtel, Boulangerie..."
+                      placeholder={
+                        selectedType === 'petit_dejeuner'
+                          ? "Ex: Petit-déjeuner à l'hôtel, Boulangerie..."
+                          : selectedType === 'collation'
+                          ? "Ex: Fruits, Barres céréales..."
+                          : "Ex: Apéritif au bar, Tapas..."
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       value={repasForm.repas_libre || ''}
                       onChange={(e) => setRepasForm(prev => ({
@@ -535,31 +568,8 @@ export default function PlanificationPage() {
                   <RepasPrincipalForm
                     composition={repasForm.composition?.repas_principal}
                     participants={sejour?.participants || []}
-                    onChange={(composition) => setRepasForm(prev => ({
-                      ...prev,
-                      composition: {
-                        ...prev.composition,
-                        repas_principal: composition,
-                      },
-                    }))}
+                    onChange={handleRepasPrincipalChange}
                   />
-                  
-                  {/* Accompagnements */}
-                  <div className="border-t pt-6">
-                    <h3 className="text-lg font-medium mb-4">Accompagnements</h3>
-                    <AccompagnementsForm
-                      composition={repasForm.composition?.accompagnements}
-                      nombreParticipants={sejour?.nombre_participants || 1}
-                      participants={sejour?.participants || []}
-                      onChange={(composition) => setRepasForm(prev => ({
-                        ...prev,
-                        composition: {
-                          ...prev.composition,
-                          accompagnements: composition,
-                        },
-                      }))}
-                    />
-                  </div>
                   
                   {/* Option repas libre */}
                   <div className="border-t pt-6">
@@ -578,7 +588,7 @@ export default function PlanificationPage() {
                   </div>
                 </div>
               ) : (
-                // Pour collation et apéro, garder l'ancien système
+                // Fallback pour autres types de repas
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {/* Sélection de recette */}
                   <div>

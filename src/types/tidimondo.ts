@@ -178,12 +178,17 @@ export interface SejourRepas {
 
 // Types pour la composition détaillée des repas
 export interface RepasComposition {
-  // Pour les petits-déjeuners
-  petit_dejeuner?: PetitDejeunerComposition;
+  // Pour les petits-déjeuners, collations et apéros (version simplifiée)
+  repas_simple?: RepasSimpleComposition;
   // Pour les repas principaux (déjeuner/dîner)
   repas_principal?: RepasPrincipalComposition;
   // Accompagnements communs
   accompagnements?: AccompagnementsComposition;
+}
+
+// Composition simplifiée pour petits-déjeuners, collations et apéros
+export interface RepasSimpleComposition {
+  ingredients: RepasIngredient[];
 }
 
 export interface PetitDejeunerComposition {
@@ -195,6 +200,7 @@ export interface RepasPrincipalComposition {
   entree?: RepasPlat;
   plat_principal?: RepasPlat;
   dessert?: RepasPlat;
+  ingredients?: RepasIngredient[]; // Ajout d'ingrédients supplémentaires
 }
 
 export interface AccompagnementsComposition {

@@ -43,9 +43,9 @@ export async function GET(request: NextRequest) {
       .select('id, nom, categorie, unite_base, allergenes, saison')
       .limit(limit);
 
-    // Recherche fuzzy : nom exact, nom normalisé, ou contient
+    // Recherche fuzzy : nom exact ou contient
     searchQuery = searchQuery.or(
-      `nom.ilike.${query}%,nom.ilike.%${query}%,nom_normalise.ilike.${normalizedQuery}%`
+      `nom.ilike.${query}%,nom.ilike.%${query}%`
     );
 
     // Filtres
@@ -68,6 +68,8 @@ export async function GET(request: NextRequest) {
       console.error('Erreur recherche ingrédients:', error);
       throw error;
     }
+
+    console.log(`Recherche "${query}": ${ingredients?.length || 0} résultats trouvés`);
 
     // Tri personnalisé pour mettre les correspondances exactes en premier
     const sortedIngredients = (ingredients || []).sort((a, b) => {
