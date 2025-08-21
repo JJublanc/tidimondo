@@ -52,8 +52,14 @@ export async function GET(request: NextRequest) {
 
     // Si l'utilisateur est connecté, appliquer le filtrage de visibilité
     if (clerkUserId) {
-      const userInfo = await getUserSubscriptionInfo(clerkUserId);
-      query = addVisibilityFilter(query, userInfo.userId, true);
+      try {
+        const userInfo = await getUserSubscriptionInfo(clerkUserId);
+        query = addVisibilityFilter(query, userInfo.userId, true);
+      } catch (error) {
+        console.error('Erreur récupération info utilisateur:', error);
+        // En cas d'erreur, montrer seulement le contenu public
+        query = query.eq('is_public', true);
+      }
     } else {
       // Si non connecté, montrer seulement le contenu public
       query = query.eq('is_public', true);

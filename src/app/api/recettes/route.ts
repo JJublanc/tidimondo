@@ -112,9 +112,6 @@ export async function GET(request: NextRequest) {
 
     const offset = (page - 1) * limit;
 
-    // Récupérer les informations d'abonnement pour le filtrage
-    const userInfo = await getUserSubscriptionInfo(clerkUserId);
-
     // Construction de la requête avec filtres de visibilité
     let query = supabase
       .from('recettes')
@@ -148,7 +145,14 @@ export async function GET(request: NextRequest) {
       `, { count: 'exact' });
 
     // Appliquer le filtrage de visibilité (public + privé de l'utilisateur)
-    query = addVisibilityFilter(query, userId, true);
+    try {
+      const userInfo = await getUserSubscriptionInfo(clerkUserId);
+      query = addVisibilityFilter(query, userInfo.userId, true);
+    } catch (error) {
+      console.error('Erreur récupération info utilisateur:', error);
+      // En cas d'erreur, montrer seulement le contenu public
+      query = query.eq('is_public', true);
+    }
 
     // Application des filtres
     if (search) {

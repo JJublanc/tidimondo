@@ -26,15 +26,15 @@ const recetteUpdateSchema = z.object({
     notes_personnelles: z.string().optional()
   }),
   ingredients: z.array(z.object({
-    ingredient_id: z.string().uuid(),
-    quantite: z.number().positive(),
-    unite: z.enum(['g', 'kg', 'ml', 'l', 'piece', 'cuillere_soupe', 'cuillere_cafe', 'pincee', 'verre']),
-    optionnel: z.boolean().default(false),
+    ingredient_id: z.string().uuid().optional(),
+    quantite: z.number().positive().optional(),
+    unite: z.enum(['g', 'kg', 'ml', 'l', 'piece', 'cuillere_soupe', 'cuillere_cafe', 'pincee', 'verre']).optional(),
+    optionnel: z.boolean().default(false).optional(),
     notes: z.string().optional()
   })).optional(),
   ustensiles: z.array(z.object({
-    ustensile_id: z.string().uuid(),
-    obligatoire: z.boolean().default(false),
+    ustensile_id: z.string().uuid().optional(),
+    obligatoire: z.boolean().default(false).optional(),
     notes: z.string().optional()
   })).optional()
 });
@@ -228,17 +228,21 @@ export async function PUT(
         .delete()
         .eq('recette_id', recetteId);
 
-      // Insérer les nouveaux ingrédients
-      if (ingredients.length > 0) {
+      // Filtrer et insérer les nouveaux ingrédients valides
+      const validIngredients = ingredients.filter(ing =>
+        ing.ingredient_id && ing.quantite && ing.unite
+      );
+      
+      if (validIngredients.length > 0) {
         const { error: ingredientsError } = await supabase
           .from('recette_ingredients')
           .insert(
-            ingredients.map((ing, index) => ({
+            validIngredients.map((ing, index) => ({
               recette_id: recetteId,
               ingredient_id: ing.ingredient_id,
               quantite: ing.quantite,
               unite: ing.unite,
-              optionnel: ing.optionnel,
+              optionnel: ing.optionnel || false,
               notes: ing.notes,
               ordre_affichage: index + 1,
               created_at: new Date().toISOString()
@@ -260,15 +264,17 @@ export async function PUT(
         .delete()
         .eq('recette_id', recetteId);
 
-      // Insérer les nouveaux ustensiles
-      if (ustensiles.length > 0) {
+      // Filtrer et insérer les nouveaux ustensiles valides
+      const validUstensiles = ustensiles.filter(ust => ust.ustensile_id);
+      
+      if (validUstensiles.length > 0) {
         const { error: ustensilesError } = await supabase
           .from('recette_ustensiles')
           .insert(
-            ustensiles.map((ust) => ({
+            validUstensiles.map((ust) => ({
               recette_id: recetteId,
               ustensile_id: ust.ustensile_id,
-              obligatoire: ust.obligatoire,
+              obligatoire: ust.obligatoire || false,
               notes: ust.notes,
               created_at: new Date().toISOString()
             }))
