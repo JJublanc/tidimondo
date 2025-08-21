@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
+import {
+  getUserSubscriptionInfo,
+  canCreatePrivateIngredient,
+  addVisibilityFilter
+} from '@/lib/freemium-utils';
 
 // Client Supabase avec service role
 const supabase = createClient(
@@ -18,7 +23,8 @@ const ingredientCreateSchema = z.object({
   allergenes: z.array(z.enum(['gluten', 'lactose', 'oeuf', 'arachide', 'fruits_coque', 'soja', 'poisson', 'crustace'])).default([]),
   // regime_alimentaire: z.array(z.enum(['vegetarien', 'vegan', 'sans_gluten', 'sans_lactose', 'halal', 'casher'])).default([]), // Temporairement désactivé - colonne pas encore créée en DB
   saison: z.array(z.enum(['printemps', 'ete', 'automne', 'hiver'])).optional(),
-  description: z.string().max(500).optional()
+  description: z.string().max(500).optional(),
+  is_public: z.boolean().default(false)
 });
 
 function normalizeString(str: string): string {
@@ -34,6 +40,8 @@ function normalizeString(str: string): string {
 // GET - Liste des ingrédients avec recherche et filtres
 export async function GET(request: NextRequest) {
   try {
+    const { userId: clerkUserId } = await auth();
+    
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = Math.min(parseInt(searchParams.get('limit') || '50'), 100); // Max 100 par page
@@ -47,6 +55,15 @@ export async function GET(request: NextRequest) {
     let query = supabase
       .from('ingredients')
       .select('*', { count: 'exact' });
+
+    // Si l'utilisateur est connecté, appliquer le filtrage de visibilité
+    if (clerkUserId) {
+      const userInfo = await getUserSubscriptionInfo(clerkUserId);
+      query = addVisibilityFilter(query, userInfo.userId, true);
+    } else {
+      // Si non connecté, montrer seulement le contenu public
+      query = query.eq('is_public', true);
+    }
 
     // Recherche par nom
     if (search) {
@@ -108,8 +125,8 @@ export async function GET(request: NextRequest) {
 // POST - Création d'un ingrédient personnalisé
 export async function POST(request: NextRequest) {
   try {
-    const { userId } = await auth();
-    if (!userId) {
+    const { userId: clerkUserId } = await auth();
+    if (!clerkUserId) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
 
@@ -118,18 +135,38 @@ export async function POST(request: NextRequest) {
     // Validation des données
     const validatedData = ingredientCreateSchema.parse(body);
 
-    // Vérifier si l'ingrédient existe déjà
+    // Récupérer les informations utilisateur
+    const userInfo = await getUserSubscriptionInfo(clerkUserId);
+
+    // Vérifier les limitations freemium pour les ingrédients privés
+    const { canCreate, message } = await canCreatePrivateIngredient(clerkUserId, validatedData.is_public);
+    
+    if (!canCreate && message) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: message
+        },
+        { status: 403 }
+      );
+    }
+
+    // Vérifier si l'ingrédient existe déjà (seulement parmi les ingrédients publics et ceux de l'utilisateur)
     const nomNormalise = normalizeString(validatedData.nom);
-    const { data: existingIngredient } = await supabase
+    let existingQuery = supabase
       .from('ingredients')
-      .select('id, nom')
-      .eq('nom_normalise', nomNormalise)
-      .single();
+      .select('id, nom, is_public, user_id')
+      .eq('nom_normalise', nomNormalise);
+
+    // Appliquer le filtrage de visibilité pour la vérification de doublons
+    existingQuery = addVisibilityFilter(existingQuery, userInfo.userId, true);
+    
+    const { data: existingIngredient } = await existingQuery.single();
 
     if (existingIngredient) {
       return NextResponse.json(
-        { 
-          success: false, 
+        {
+          success: false,
           error: `Un ingrédient similaire existe déjà : ${existingIngredient.nom}`,
           existing: existingIngredient
         },
@@ -138,12 +175,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Créer l'ingrédient (exclure regime_alimentaire temporairement)
-    const { regime_alimentaire, ...dataToInsert } = validatedData as any;
+    const { regime_alimentaire, ...dataToInsert } = validatedData as Record<string, unknown>;
     const { data: newIngredient, error } = await supabase
       .from('ingredients')
       .insert({
         ...dataToInsert,
-        nom_normalise: nomNormalise
+        nom_normalise: nomNormalise,
+        user_id: userInfo.userId
       })
       .select()
       .single();

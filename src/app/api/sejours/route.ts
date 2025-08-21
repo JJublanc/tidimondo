@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
-import { SejourFormData, Sejour, SejourFilters } from '@/types/tidimondo';
+import { SejourFormData, SejourFilters } from '@/types/tidimondo';
+import {
+  canCreateSejour
+} from '@/lib/freemium-utils';
 
 // GET /api/sejours - Récupérer la liste des séjours de l'utilisateur
 export async function GET(request: NextRequest) {
@@ -41,8 +44,8 @@ export async function GET(request: NextRequest) {
     // Filtres
     const filters: SejourFilters = {
       search: searchParams.get('search') || undefined,
-      statut: searchParams.get('statut')?.split(',') as any || undefined,
-      type_sejour: searchParams.get('type_sejour') as any || undefined,
+      statut: searchParams.get('statut')?.split(',') as SejourFilters['statut'] || undefined,
+      type_sejour: searchParams.get('type_sejour') as SejourFilters['type_sejour'] || undefined,
       date_debut_apres: searchParams.get('date_debut_apres') || undefined,
       date_fin_avant: searchParams.get('date_fin_avant') || undefined,
     };
@@ -161,28 +164,23 @@ export async function POST(request: NextRequest) {
 
     const userId = userData.id;
 
-    // Vérification des limitations pour les utilisateurs gratuits
-    // TODO: Implémenter la vérification du plan utilisateur
-    const { data: existingSejours, error: countError } = await supabase
-      .from('sejours')
-      .select('id', { count: 'exact' })
-      .eq('user_id', userId);
-
-    if (countError) {
-      console.error('Erreur lors de la vérification des séjours existants:', countError);
+    // Vérification des limitations freemium pour les séjours
+    try {
+      const { canCreate, message } = await canCreateSejour(clerkUserId);
+      
+      if (!canCreate && message) {
+        return NextResponse.json(
+          { error: { message } },
+          { status: 403 }
+        );
+      }
+    } catch (error) {
+      console.error('Erreur lors de la vérification des limitations freemium:', error);
       return NextResponse.json(
         { error: { message: 'Erreur lors de la vérification des limitations' } },
         { status: 500 }
       );
     }
-
-    // Limitation pour les utilisateurs gratuits (à adapter selon votre logique métier)
-    // if (existingSejours && existingSejours.length >= 1 && !userIsPro) {
-    //   return NextResponse.json(
-    //     { error: { message: 'Limite de séjours atteinte pour le plan gratuit' } },
-    //     { status: 403 }
-    //   );
-    // }
 
     // Création du séjour
     const sejourData = {

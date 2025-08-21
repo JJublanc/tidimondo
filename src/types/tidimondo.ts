@@ -64,6 +64,12 @@ export interface Ingredient {
   saison: Saison[] | null;
   allergenes: Allergene[];
   regime_alimentaire: RegimeAlimentaire[];
+  /** UUID de l'utilisateur propriétaire (NULL pour les ingrédients admin) */
+  user_id?: string | null;
+  /** Ingrédient visible par tous les utilisateurs */
+  is_public: boolean;
+  /** Ingrédient créé par l'administration */
+  created_by_admin: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -75,6 +81,12 @@ export interface Ustensile {
   categorie: CategorieUstensile | null;
   description: string | null;
   obligatoire: boolean;
+  /** UUID de l'utilisateur propriétaire (NULL pour les ustensiles admin) */
+  user_id?: string | null;
+  /** Ustensile visible par tous les utilisateurs */
+  is_public: boolean;
+  /** Ustensile créé par l'administration */
+  created_by_admin: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -99,6 +111,8 @@ export interface Recette {
   source: string | null;
   notes_personnelles: string | null;
   is_public: boolean;
+  /** Recette créée par l'administration */
+  created_by_admin: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -323,6 +337,7 @@ export interface RecetteFormData {
   source?: string;
   notes_personnelles?: string;
   is_public: boolean;
+  created_by_admin?: boolean;
   ingredients: RecetteIngredientFormData[];
   ustensiles: RecetteUstensileFormData[];
 }
@@ -340,6 +355,28 @@ export interface RecetteUstensileFormData {
   ustensile_id: string;
   obligatoire: boolean;
   notes?: string;
+}
+
+// Formulaires pour les nouveaux éléments avec champs freemium
+export interface IngredientFormData {
+  nom: string;
+  unite_base: UniteBase;
+  categorie?: CategorieIngredient;
+  prix_moyen_euro?: number;
+  saison?: Saison[];
+  allergenes: Allergene[];
+  regime_alimentaire: RegimeAlimentaire[];
+  is_public: boolean;
+  created_by_admin?: boolean;
+}
+
+export interface UstensileFormData {
+  nom: string;
+  categorie?: CategorieUstensile;
+  description?: string;
+  obligatoire: boolean;
+  is_public: boolean;
+  created_by_admin?: boolean;
 }
 
 export interface SejourFormData {
@@ -378,6 +415,7 @@ export interface RecetteFilters {
   saison?: Saison;
   is_public?: boolean;
   user_id?: string;
+  created_by_admin?: boolean;
 }
 
 export interface IngredientFilters {
@@ -385,6 +423,17 @@ export interface IngredientFilters {
   categorie?: CategorieIngredient;
   allergenes_exclus?: Allergene[];
   saison?: Saison;
+  is_public?: boolean;
+  user_id?: string;
+  created_by_admin?: boolean;
+}
+
+export interface UstensileFilters {
+  search?: string;
+  categorie?: CategorieUstensile;
+  is_public?: boolean;
+  user_id?: string;
+  created_by_admin?: boolean;
 }
 
 export interface SejourFilters {
@@ -462,6 +511,86 @@ export interface UserStats {
   recettes_par_difficulte: {
     [key in DifficulteRecette]: number;
   };
+}
+
+// =====================================================
+// TYPES POUR LES STATISTIQUES FREEMIUM
+// =====================================================
+
+/** Statistiques freemium d'un utilisateur (basées sur la vue user_freemium_stats) */
+export interface UserFreemiumStats {
+  id: string;
+  clerk_user_id: string;
+  email: string;
+  subscription_status: 'active' | 'inactive' | 'canceled' | 'past_due' | 'trialing' | 'incomplete';
+  /** Nombre total de séjours créés par l'utilisateur */
+  total_sejours: number;
+  /** Nombre de recettes privées créées par l'utilisateur */
+  recettes_privees: number;
+  /** Nombre d'ingrédients privés créés par l'utilisateur */
+  ingredients_prives: number;
+  /** Nombre d'ustensiles privés créés par l'utilisateur */
+  ustensiles_prives: number;
+  /** Type de plan de l'utilisateur */
+  plan_type: 'Pro' | 'Gratuit';
+}
+
+/** Limites freemium par type de plan */
+export interface FreemiumLimits {
+  /** Limite de recettes privées pour les utilisateurs gratuits */
+  recettes_privees_max: number;
+  /** Limite d'ingrédients privés pour les utilisateurs gratuits */
+  ingredients_prives_max: number;
+  /** Limite d'ustensiles privés pour les utilisateurs gratuits */
+  ustensiles_prives_max: number;
+}
+
+/** Constantes des limites freemium */
+export const FREEMIUM_LIMITS: FreemiumLimits = {
+  recettes_privees_max: 5,
+  ingredients_prives_max: 10,
+  ustensiles_prives_max: 5,
+} as const;
+
+// =====================================================
+// TYPES POUR LES VÉRIFICATIONS DE LIMITATIONS
+// =====================================================
+
+/** Résultat d'une vérification de limitation freemium */
+export interface FreemiumCheckResult {
+  /** Indique si l'action est autorisée */
+  allowed: boolean;
+  /** Message d'erreur si l'action n'est pas autorisée */
+  message?: string;
+  /** Nombre actuel d'éléments privés */
+  current_count: number;
+  /** Limite maximale pour les utilisateurs gratuits */
+  max_limit: number;
+  /** Type de plan de l'utilisateur */
+  plan_type: 'Pro' | 'Gratuit';
+}
+
+/** Types de vérifications freemium disponibles */
+export type FreemiumCheckType = 'recette' | 'ingredient' | 'ustensile';
+
+/** Paramètres pour les vérifications de limitations */
+export interface FreemiumCheckParams {
+  /** ID Clerk de l'utilisateur */
+  user_clerk_id: string;
+  /** Type de vérification à effectuer */
+  check_type: FreemiumCheckType;
+  /** Indique si l'élément sera public (pas de limitation si public) */
+  is_public?: boolean;
+}
+
+/** Statistiques de comptage pour un utilisateur */
+export interface UserCountStats {
+  /** Nombre de recettes privées */
+  private_recettes: number;
+  /** Nombre d'ingrédients privés */
+  private_ingredients: number;
+  /** Nombre d'ustensiles privés */
+  private_ustensiles: number;
 }
 
 // =====================================================

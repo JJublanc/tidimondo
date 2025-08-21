@@ -3,6 +3,12 @@ import { auth } from '@clerk/nextjs/server';
 import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import type { RecetteFormData, RecetteIngredientFormData, RecetteUstensileFormData, RecetteComplete } from '@/types/tidimondo';
+import {
+  getUserSubscriptionInfo,
+  canCreatePrivateRecette,
+  addVisibilityFilter,
+  FreemiumLimitError
+} from '@/lib/freemium-utils';
 
 // Client Supabase avec service role pour les opérations admin
 const supabase = createClient(
@@ -51,35 +57,23 @@ function normalizeString(str: string): string {
     .trim();
 }
 
-// Fonction pour vérifier les limitations freemium
-async function checkFreemiumLimitations(clerkUserId: string, ingredientsCount: number, userUuid: string) {
-  // Vérifier l'abonnement de l'utilisateur
-  const { data: user } = await supabase
-    .from('users')
-    .select('subscription_status')
-    .eq('clerk_user_id', clerkUserId)
-    .single();
-
-  const hasProAccess = user?.subscription_status === 'active';
-
-  if (!hasProAccess) {
-    // Vérifier le nombre de recettes existantes
-    const { count: existingRecettes } = await supabase
-      .from('recettes')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', userUuid);
-
-    if ((existingRecettes || 0) >= 5) {
-      throw new Error('Limite de 5 recettes atteinte. Passez au plan Pro pour créer plus de recettes.');
-    }
-
-    // Vérifier le nombre d'ingrédients par recette
-    if (ingredientsCount > 15) {
-      throw new Error('Limite de 15 ingrédients par recette. Passez au plan Pro pour ajouter plus d\'ingrédients.');
-    }
+// Fonction pour vérifier les limitations freemium (mise à jour)
+async function checkFreemiumLimitations(clerkUserId: string, ingredientsCount: number, isPublic: boolean) {
+  // Vérifier si l'utilisateur peut créer une recette privée
+  const { canCreate, message } = await canCreatePrivateRecette(clerkUserId, isPublic);
+  
+  if (!canCreate && message) {
+    throw new FreemiumLimitError(message, 5, 0); // Les détails exacts seront récupérés par la fonction
   }
 
-  return hasProAccess;
+  // Vérifier les limitations d'ingrédients pour les utilisateurs gratuits
+  const userInfo = await getUserSubscriptionInfo(clerkUserId);
+  
+  if (!userInfo.hasProAccess && ingredientsCount > 15) {
+    throw new Error('Limite de 15 ingrédients par recette. Passez au plan Pro pour ajouter plus d\'ingrédients.');
+  }
+
+  return userInfo.hasProAccess;
 }
 
 // GET - Liste des recettes utilisateur
@@ -118,7 +112,10 @@ export async function GET(request: NextRequest) {
 
     const offset = (page - 1) * limit;
 
-    // Construction de la requête avec filtres
+    // Récupérer les informations d'abonnement pour le filtrage
+    const userInfo = await getUserSubscriptionInfo(clerkUserId);
+
+    // Construction de la requête avec filtres de visibilité
     let query = supabase
       .from('recettes')
       .select(`
@@ -148,8 +145,10 @@ export async function GET(request: NextRequest) {
             categorie
           )
         )
-      `, { count: 'exact' })
-      .eq('user_id', userId);
+      `, { count: 'exact' });
+
+    // Appliquer le filtrage de visibilité (public + privé de l'utilisateur)
+    query = addVisibilityFilter(query, userId, true);
 
     // Application des filtres
     if (search) {
@@ -250,7 +249,7 @@ export async function POST(request: NextRequest) {
     const { recette, ingredients, ustensiles } = validatedData;
 
     // Vérification des limitations freemium
-    await checkFreemiumLimitations(clerkUserId, ingredients.length, userId);
+    await checkFreemiumLimitations(clerkUserId, ingredients.length, recette.is_public);
 
     // Début de la transaction
     const { data: newRecette, error: recetteError } = await supabase

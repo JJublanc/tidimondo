@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
+import {
+  getUserSubscriptionInfo,
+  canCreatePrivateUstensile,
+  addVisibilityFilter
+} from '@/lib/freemium-utils';
 
 // Client Supabase avec service role
 const supabase = createClient(
@@ -14,7 +19,8 @@ const ustensileCreateSchema = z.object({
   nom: z.string().min(2, 'Le nom doit contenir au moins 2 caractères').max(100),
   categorie: z.enum(['cuisson', 'preparation', 'service', 'mesure', 'autre']),
   description: z.string().max(500).optional(),
-  obligatoire_defaut: z.boolean().default(false)
+  obligatoire_defaut: z.boolean().default(false),
+  is_public: z.boolean().default(false)
 });
 
 function normalizeString(str: string): string {
@@ -30,6 +36,8 @@ function normalizeString(str: string): string {
 // GET - Liste des ustensiles avec recherche et filtres
 export async function GET(request: NextRequest) {
   try {
+    const { userId: clerkUserId } = await auth();
+    
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = Math.min(parseInt(searchParams.get('limit') || '50'), 100);
@@ -41,6 +49,15 @@ export async function GET(request: NextRequest) {
     let query = supabase
       .from('ustensiles')
       .select('*', { count: 'exact' });
+
+    // Si l'utilisateur est connecté, appliquer le filtrage de visibilité
+    if (clerkUserId) {
+      const userInfo = await getUserSubscriptionInfo(clerkUserId);
+      query = addVisibilityFilter(query, userInfo.userId, true);
+    } else {
+      // Si non connecté, montrer seulement le contenu public
+      query = query.eq('is_public', true);
+    }
 
     // Recherche par nom
     if (search) {
@@ -102,8 +119,8 @@ export async function GET(request: NextRequest) {
 // POST - Création d'un ustensile personnalisé
 export async function POST(request: NextRequest) {
   try {
-    const { userId } = await auth();
-    if (!userId) {
+    const { userId: clerkUserId } = await auth();
+    if (!clerkUserId) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
 
@@ -112,18 +129,38 @@ export async function POST(request: NextRequest) {
     // Validation des données
     const validatedData = ustensileCreateSchema.parse(body);
 
-    // Vérifier si l'ustensile existe déjà
+    // Récupérer les informations utilisateur
+    const userInfo = await getUserSubscriptionInfo(clerkUserId);
+
+    // Vérifier les limitations freemium pour les ustensiles privés
+    const { canCreate, message } = await canCreatePrivateUstensile(clerkUserId, validatedData.is_public);
+    
+    if (!canCreate && message) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: message
+        },
+        { status: 403 }
+      );
+    }
+
+    // Vérifier si l'ustensile existe déjà (seulement parmi les ustensiles publics et ceux de l'utilisateur)
     const nomNormalise = normalizeString(validatedData.nom);
-    const { data: existingUstensile } = await supabase
+    let existingQuery = supabase
       .from('ustensiles')
-      .select('id, nom')
-      .eq('nom_normalise', nomNormalise)
-      .single();
+      .select('id, nom, is_public, user_id')
+      .eq('nom_normalise', nomNormalise);
+
+    // Appliquer le filtrage de visibilité pour la vérification de doublons
+    existingQuery = addVisibilityFilter(existingQuery, userInfo.userId, true);
+    
+    const { data: existingUstensile } = await existingQuery.single();
 
     if (existingUstensile) {
       return NextResponse.json(
-        { 
-          success: false, 
+        {
+          success: false,
           error: `Un ustensile similaire existe déjà : ${existingUstensile.nom}`,
           existing: existingUstensile
         },
@@ -136,7 +173,8 @@ export async function POST(request: NextRequest) {
       .from('ustensiles')
       .insert({
         ...validatedData,
-        nom_normalise: nomNormalise
+        nom_normalise: nomNormalise,
+        user_id: userInfo.userId
       })
       .select()
       .single();
