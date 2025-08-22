@@ -244,8 +244,12 @@ export default function NouveauSejourPage() {
                 min="1"
                 required
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={formData.nombre_participants}
-                onChange={(e) => handleInputChange('nombre_participants', parseInt(e.target.value))}
+                value={formData.nombre_participants || ''}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  const numValue = value === '' ? 1 : parseInt(value);
+                  handleInputChange('nombre_participants', isNaN(numValue) ? 1 : numValue);
+                }}
               />
             </div>
 

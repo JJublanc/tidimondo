@@ -283,6 +283,7 @@ export interface ListeCoursesContenu {
 }
 
 export interface ListeCoursesIngredient {
+  id: string; // Clé unique pour React (ingredient_id ou ingredient_id_unite)
   ingredient_id: string;
   nom: string;
   quantite_totale: number;

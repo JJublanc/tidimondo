@@ -690,7 +690,7 @@ export default function SejourDetailPage() {
                       <div className="space-y-3">
                         {ingredients.map((ingredient) => (
                           <div
-                            key={ingredient.ingredient_id}
+                            key={ingredient.id}
                             className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                           >
                             <div className="flex-1">

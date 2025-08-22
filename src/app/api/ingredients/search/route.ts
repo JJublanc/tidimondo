@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
 import { createClient } from '@supabase/supabase-js';
+import {
+  getUserSubscriptionInfo,
+  addVisibilityFilter
+} from '@/lib/freemium-utils';
 
 // Client Supabase avec service role
 const supabase = createClient(
@@ -40,8 +45,22 @@ export async function GET(request: NextRequest) {
 
     let searchQuery = supabase
       .from('ingredients')
-      .select('id, nom, categorie, unite_base, allergenes, saison')
+      .select('id, nom, categorie, unite_base, allergenes, saison, is_public, user_id')
       .limit(limit);
+
+    // Appliquer le filtrage de visibilité
+    const { userId: clerkUserId } = await auth();
+    if (clerkUserId) {
+      try {
+        const userInfo = await getUserSubscriptionInfo(clerkUserId);
+        searchQuery = addVisibilityFilter(searchQuery, userInfo.userId, true);
+      } catch (error) {
+        console.error('Erreur récupération info utilisateur:', error);
+        searchQuery = searchQuery.eq('is_public', true);
+      }
+    } else {
+      searchQuery = searchQuery.eq('is_public', true);
+    }
 
     // Recherche fuzzy : nom exact ou contient
     searchQuery = searchQuery.or(

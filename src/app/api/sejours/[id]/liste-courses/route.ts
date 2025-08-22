@@ -55,6 +55,24 @@ function convertToBaseUnit(quantite: number, unite: UniteRecette, uniteBase: str
   return quantite;
 }
 
+// Fonction pour vérifier si deux unités sont compatibles (même famille)
+function areUnitsCompatible(unite1: string, unite2: string): boolean {
+  // Familles d'unités compatibles
+  const volumeUnits = ['ml', 'l', 'cl', 'dl', 'cuillere_soupe', 'cuillere_cafe', 'verre'];
+  const weightUnits = ['g', 'kg', 'mg', 'cuillere_soupe', 'cuillere_cafe', 'pincee'];
+  const countUnits = ['piece', 'unite'];
+  
+  const families = [volumeUnits, weightUnits, countUnits];
+  
+  for (const family of families) {
+    if (family.includes(unite1) && family.includes(unite2)) {
+      return true;
+    }
+  }
+  
+  return false;
+}
+
 // Fonction pour agréger les ingrédients
 function aggregateIngredients(ingredients: Array<{
   ingredient_id: string;
@@ -67,6 +85,8 @@ function aggregateIngredients(ingredients: Array<{
   recette_nom?: string;
   notes?: string;
 }>): ListeCoursesIngredient[] {
+  console.log(`🔄 Agrégation de ${ingredients.length} ingrédients`);
+  
   const aggregated = new Map<string, {
     ingredient_id: string;
     nom: string;
@@ -83,12 +103,40 @@ function aggregateIngredients(ingredients: Array<{
     
     if (aggregated.has(key)) {
       const existing = aggregated.get(key)!;
-      // Convertir vers l'unité de base pour additionner
-      const quantiteConverted = convertToBaseUnit(ingredient.quantite, ingredient.unite, ingredient.unite_base);
-      const existingConverted = convertToBaseUnit(existing.quantite_totale, existing.unite, existing.unite_base);
       
-      existing.quantite_totale = existingConverted + quantiteConverted;
-      existing.unite = ingredient.unite_base as UniteRecette;
+      // Vérifier si les unités sont compatibles
+      if (areUnitsCompatible(existing.unite, ingredient.unite)) {
+        if (existing.unite === ingredient.unite) {
+          // Même unité exacte, addition directe
+          console.log(`  ➕ ${ingredient.nom}: ${existing.quantite_totale} ${existing.unite} + ${ingredient.quantite} ${ingredient.unite} = ${existing.quantite_totale + ingredient.quantite} ${existing.unite}`);
+          existing.quantite_totale += ingredient.quantite;
+        } else {
+          // Unités compatibles mais différentes : convertir vers l'unité de base et additionner
+          const quantiteConverted = convertToBaseUnit(ingredient.quantite, ingredient.unite, ingredient.unite_base);
+          const existingConverted = convertToBaseUnit(existing.quantite_totale, existing.unite, existing.unite_base);
+          
+          console.log(`  ➕ ${ingredient.nom}: ${existing.quantite_totale} ${existing.unite} + ${ingredient.quantite} ${ingredient.unite} = ${existingConverted + quantiteConverted} ${ingredient.unite_base}`);
+          
+          existing.quantite_totale = existingConverted + quantiteConverted;
+          existing.unite = ingredient.unite_base as UniteRecette;
+        }
+      } else {
+        // Unités incompatibles : créer une entrée séparée
+        const newKey = `${ingredient.ingredient_id}_${ingredient.unite}`;
+        console.log(`  ⚠️ ${ingredient.nom}: unités incompatibles (${existing.unite} vs ${ingredient.unite}), création d'une entrée séparée`);
+        
+        aggregated.set(newKey, {
+          ingredient_id: ingredient.ingredient_id,
+          nom: `${ingredient.nom} (${ingredient.unite})`,
+          quantite_totale: ingredient.quantite,
+          unite: ingredient.unite,
+          prix_estime: ingredient.prix_moyen_euro,
+          recettes_utilisees: new Set(ingredient.recette_nom ? [ingredient.recette_nom] : []),
+          notes: new Set(ingredient.notes ? [ingredient.notes] : []),
+          unite_base: ingredient.unite_base
+        });
+        continue;
+      }
       
       if (ingredient.recette_nom) {
         existing.recettes_utilisees.add(ingredient.recette_nom);
@@ -102,12 +150,13 @@ function aggregateIngredients(ingredients: Array<{
         existing.prix_estime = ingredient.prix_moyen_euro;
       }
     } else {
-      const quantiteConverted = convertToBaseUnit(ingredient.quantite, ingredient.unite, ingredient.unite_base);
+      console.log(`  ➕ ${ingredient.nom}: nouveau → ${ingredient.quantite} ${ingredient.unite}`);
+      
       aggregated.set(key, {
         ingredient_id: ingredient.ingredient_id,
         nom: ingredient.nom,
-        quantite_totale: quantiteConverted,
-        unite: ingredient.unite_base as UniteRecette,
+        quantite_totale: ingredient.quantite,
+        unite: ingredient.unite,
         prix_estime: ingredient.prix_moyen_euro,
         recettes_utilisees: new Set(ingredient.recette_nom ? [ingredient.recette_nom] : []),
         notes: new Set(ingredient.notes ? [ingredient.notes] : []),
@@ -116,7 +165,8 @@ function aggregateIngredients(ingredients: Array<{
     }
   }
 
-  return Array.from(aggregated.values()).map(item => ({
+  return Array.from(aggregated.entries()).map(([key, item]) => ({
+    id: key, // Clé unique pour React (ingredient_id ou ingredient_id_unite)
     ingredient_id: item.ingredient_id,
     nom: item.nom,
     quantite_totale: Math.round(item.quantite_totale * 100) / 100, // Arrondir à 2 décimales
@@ -303,6 +353,9 @@ export async function GET(
       );
     }
 
+    // Log pour déboguer la récupération des repas
+    console.log('🔍 Données brutes des repas récupérées:', JSON.stringify(repas, null, 2));
+
     // Collecter tous les ingrédients nécessaires
     const allIngredients: Array<{
       ingredient_id: string;
@@ -316,40 +369,101 @@ export async function GET(
       notes?: string;
     }> = [];
 
+    console.log(`🔍 Traitement de ${repas?.length || 0} repas pour le séjour`);
+    
     for (const repasItem of repas || []) {
+      console.log(`📅 Traitement repas du ${repasItem.date_repas} - ${repasItem.type_repas}`);
+      console.log(`   🔍 recette_id: ${repasItem.recette_id}`);
+      console.log(`   🔍 recette data:`, repasItem.recette);
+      
       // Ingrédients des recettes
+      let recetteData = null;
+      
+      // Vérifier d'abord s'il y a une recette dans la colonne recette_id
       if (repasItem.recette) {
         const recette = repasItem.recette as any;
         // Supabase peut retourner un tableau ou un objet unique
-        const recetteData = Array.isArray(recette) ? recette[0] : recette;
+        recetteData = Array.isArray(recette) ? recette[0] : recette;
+        console.log(`   ✅ Recette trouvée via colonne recette_id`);
+      }
+      // Si pas de recette dans la colonne, chercher dans la composition
+      else if (repasItem.composition?.repas_principal?.plat_principal?.recette_id) {
+        const recetteId = repasItem.composition.repas_principal.plat_principal.recette_id;
+        console.log(`   🔍 Recette trouvée dans composition: ${recetteId}`);
         
-        if (recetteData && recetteData.recette_ingredients) {
-          const facteurPortion = repasItem.nombre_portions / recetteData.portions;
+        // Récupérer les données de la recette depuis la base
+        const { data: recetteFromDb, error: recetteError } = await supabase
+          .from('recettes')
+          .select(`
+            id,
+            nom,
+            portions,
+            recette_ingredients(
+              id,
+              quantite,
+              unite,
+              optionnel,
+              notes,
+              ingredient:ingredients(
+                id,
+                nom,
+                unite_base,
+                categorie,
+                prix_moyen_euro
+              )
+            )
+          `)
+          .eq('id', recetteId)
+          .single();
           
-          for (const recetteIngredient of recetteData.recette_ingredients) {
-            if (!recetteIngredient.optionnel && recetteIngredient.ingredient) {
-              allIngredients.push({
-                ingredient_id: recetteIngredient.ingredient.id,
-                nom: recetteIngredient.ingredient.nom,
-                quantite: recetteIngredient.quantite * facteurPortion,
-                unite: recetteIngredient.unite,
-                unite_base: recetteIngredient.ingredient.unite_base,
-                categorie: recetteIngredient.ingredient.categorie,
-                prix_moyen_euro: recetteIngredient.ingredient.prix_moyen_euro,
-                recette_nom: recetteData.nom,
-                notes: recetteIngredient.notes || undefined
-              });
-            }
+        if (!recetteError && recetteFromDb) {
+          recetteData = recetteFromDb;
+          console.log(`   ✅ Données recette récupérées: ${recetteData.nom}`);
+        } else {
+          console.log(`   ❌ Erreur récupération recette:`, recetteError);
+        }
+      }
+      
+      if (recetteData && recetteData.recette_ingredients) {
+        // CORRECTION: Le facteur de portion doit tenir compte du nombre de participants du séjour
+        // repasItem.nombre_portions = nombre de personnes pour ce repas
+        // recetteData.portions = nombre de portions de la recette originale
+        const facteurPortion = repasItem.nombre_portions / recetteData.portions;
+        
+        console.log(`🍽️ Recette "${recetteData.nom}": ${recetteData.portions} portions originales → ${repasItem.nombre_portions} portions nécessaires (facteur: ${facteurPortion})`);
+        
+        for (const recetteIngredient of recetteData.recette_ingredients) {
+          if (!recetteIngredient.optionnel && recetteIngredient.ingredient) {
+            const quantiteAjustee = recetteIngredient.quantite * facteurPortion;
+            console.log(`  🥕 ${recetteIngredient.ingredient.nom}: ${recetteIngredient.quantite} ${recetteIngredient.unite} × ${facteurPortion} = ${quantiteAjustee} ${recetteIngredient.unite}`);
+            
+            allIngredients.push({
+              ingredient_id: recetteIngredient.ingredient.id,
+              nom: recetteIngredient.ingredient.nom,
+              quantite: quantiteAjustee,
+              unite: recetteIngredient.unite,
+              unite_base: recetteIngredient.ingredient.unite_base,
+              categorie: recetteIngredient.ingredient.categorie,
+              prix_moyen_euro: recetteIngredient.ingredient.prix_moyen_euro,
+              recette_nom: recetteData.nom,
+              notes: recetteIngredient.notes || undefined
+            });
           }
         }
+      } else {
+        console.log(`   ❌ Pas de recette pour ce repas`);
       }
 
       // Ingrédients de la composition du repas
       if (repasItem.composition) {
+        console.log(`🍽️ Traitement composition du repas (${repasItem.nombre_portions} portions)`);
+        
         const compositionIngredients = extractIngredientsFromComposition(
           repasItem.composition as RepasComposition,
           repasItem.nombre_portions
         );
+
+        console.log(`  📝 ${compositionIngredients.length} ingrédients dans la composition`);
 
         // Récupérer les détails des ingrédients de la composition
         for (const compIng of compositionIngredients) {
@@ -360,6 +474,8 @@ export async function GET(
             .single();
 
           if (ingredientData) {
+            console.log(`  🥕 ${compIng.nom}: ${compIng.quantite} ${compIng.unite}`);
+            
             allIngredients.push({
               ingredient_id: compIng.ingredient_id,
               nom: compIng.nom,
@@ -374,8 +490,12 @@ export async function GET(
       }
     }
 
+    console.log(`📊 Total ingrédients collectés: ${allIngredients.length}`);
+    
     // Agréger les ingrédients
     const ingredientsAgreges = aggregateIngredients(allIngredients);
+    
+    console.log(`📊 Ingrédients après agrégation: ${ingredientsAgreges.length}`);
 
     // Organiser par catégories
     const categories: Record<CategorieIngredient, ListeCoursesIngredient[]> = {
