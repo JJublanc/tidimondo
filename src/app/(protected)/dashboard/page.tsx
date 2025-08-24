@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { SubscriptionGate } from '@/components/auth/SubscriptionGate'
 import { useSubscription } from '@/hooks/useSubscription'
+import { useIsAdmin } from '@/hooks/useIsAdmin'
 import {
   Crown,
   Calendar,
@@ -13,12 +14,15 @@ import {
   ChefHat,
   ArrowRight,
   TrendingUp,
-  Users
+  Users,
+  BookOpen,
+  Shield
 } from 'lucide-react'
 
 export default function DashboardPage() {
   const { user } = useUser()
   const { hasProAccess, loading } = useSubscription()
+  const { isAdmin } = useIsAdmin()
 
   if (!user) {
     return <div>Chargement...</div>
@@ -191,6 +195,36 @@ export default function DashboardPage() {
                 </p>
               </div>
             </Link>
+
+            {/* Blog */}
+            <Link href="/admin/blog" className="group">
+              <div className="bg-gradient-to-r from-purple-600 to-purple-500 rounded-xl p-6 text-white hover:from-purple-700 hover:to-purple-600 transition-all duration-200 transform hover:scale-105">
+                <div className="flex items-center justify-between mb-4">
+                  <BookOpen className="h-8 w-8" />
+                  <ArrowRight className="h-5 w-5 opacity-70 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+                </div>
+                <h4 className="text-lg font-semibold mb-2">Gestion du Blog</h4>
+                <p className="text-purple-100 text-sm">
+                  Créez et gérez vos articles
+                </p>
+              </div>
+            </Link>
+
+            {/* Administration (visible seulement pour les admins) */}
+            {isAdmin && (
+              <Link href="/admin" className="group">
+                <div className="bg-gradient-to-r from-red-600 to-red-500 rounded-xl p-6 text-white hover:from-red-700 hover:to-red-600 transition-all duration-200 transform hover:scale-105">
+                  <div className="flex items-center justify-between mb-4">
+                    <Shield className="h-8 w-8" />
+                    <ArrowRight className="h-5 w-5 opacity-70 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+                  </div>
+                  <h4 className="text-lg font-semibold mb-2">Administration</h4>
+                  <p className="text-red-100 text-sm">
+                    Panneau d'administration
+                  </p>
+                </div>
+              </Link>
+            )}
 
           </div>
         </div>

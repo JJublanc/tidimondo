@@ -20,6 +20,23 @@ export const FREEMIUM_LIMITS: FreemiumLimits = {
   ustensiles_prives: 5,
 };
 
+// Limites spécifiques au blog
+export const BLOG_FREEMIUM_LIMITS = {
+  articles_per_month: 0,        // Gratuit ne peut pas publier
+  comments_per_day: 5,          // 5 commentaires par jour
+  max_article_length: 0,        // Pas de création d'articles
+  can_publish_articles: false,  // Gratuit ne peut pas publier
+  can_comment: true,           // Gratuit peut commenter
+};
+
+export const BLOG_PREMIUM_LIMITS = {
+  articles_per_month: 10,       // 10 articles par mois pour premium
+  comments_per_day: 50,         // 50 commentaires par jour
+  max_article_length: 20000,    // 20k caractères pour premium
+  can_publish_articles: true,   // Premium peut publier
+  can_comment: true,           // Premium peut commenter
+};
+
 export interface UserSubscriptionInfo {
   hasProAccess: boolean;
   subscriptionStatus: string | null;

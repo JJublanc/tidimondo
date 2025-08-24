@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
-import { ArrowRight, Check, Calendar, FileText, ShoppingCart, Package, ChefHat, Clock, Users } from 'lucide-react'
+import { ArrowRight, Check, Calendar, FileText, ShoppingCart, Package, ChefHat, Clock, Users, BookOpen, TrendingUp } from 'lucide-react'
 
 export default function HomePage() {
   return (
@@ -19,6 +19,9 @@ export default function HomePage() {
           <nav className="hidden md:flex items-center space-x-8">
             <Link href="#features" className="text-gray-600 hover:text-gray-900 transition-colors">
               Fonctionnalités
+            </Link>
+            <Link href="/blog" className="text-gray-600 hover:text-gray-900 transition-colors">
+              Blog
             </Link>
             <Link href="#pricing" className="text-gray-600 hover:text-gray-900 transition-colors">
               Tarifs
@@ -136,6 +139,70 @@ export default function HomePage() {
                 Gérez vos ingrédients et ustensiles. Base de données complète et recherchable pour une organisation parfaite.
               </p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Blog Section */}
+      <section className="py-20 px-4 bg-gradient-to-r from-purple-50 to-indigo-50">
+        <div className="container mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Découvrez notre blog
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Conseils d'experts, astuces pratiques et guides pour réussir vos séjours culinaires
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 mb-12">
+            <div className="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
+              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+                <BookOpen className="h-6 w-6 text-purple-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Conseils d'organisation</h3>
+              <p className="text-gray-600 mb-4">
+                Découvrez nos meilleures techniques pour planifier vos séjours culinaires de A à Z.
+              </p>
+              <Link href="/blog?category=organisation-sejours" className="text-purple-600 hover:text-purple-700 font-medium">
+                Lire les articles →
+              </Link>
+            </div>
+
+            <div className="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
+              <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-4">
+                <TrendingUp className="h-6 w-6 text-indigo-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Astuces pratiques</h3>
+              <p className="text-gray-600 mb-4">
+                Des tips concrets pour optimiser vos courses, votre temps et votre budget.
+              </p>
+              <Link href="/blog?category=astuces-pratiques" className="text-indigo-600 hover:text-indigo-700 font-medium">
+                Découvrir les astuces →
+              </Link>
+            </div>
+
+            <div className="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
+              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+                <Users className="h-6 w-6 text-green-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Témoignages</h3>
+              <p className="text-gray-600 mb-4">
+                Retours d'expérience et histoires inspirantes de notre communauté.
+              </p>
+              <Link href="/blog?category=temoignages" className="text-green-600 hover:text-green-700 font-medium">
+                Lire les témoignages →
+              </Link>
+            </div>
+          </div>
+
+          <div className="text-center">
+            <Link href="/blog">
+              <Button size="lg" variant="outline" className="border-purple-200 text-purple-700 hover:bg-purple-50">
+                Voir tous les articles
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
