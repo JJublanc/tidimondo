@@ -8,7 +8,8 @@ export default function SignInPage() {
           <h1 className="text-3xl font-bold text-gray-900">TidiMondo</h1>
           <p className="text-gray-600 mt-2">Connectez-vous à votre compte</p>
         </div>
-        <SignIn 
+        <SignIn
+          fallbackRedirectUrl="/dashboard"
           appearance={{
             elements: {
               formButtonPrimary: 'bg-blue-600 hover:bg-blue-700 text-sm normal-case',
