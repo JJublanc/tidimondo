@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Créer la session de checkout
+    // Créer la session de checkout avec support des codes promo
     const session = await stripe.checkout.sessions.create({
       customer: customer.id,
       payment_method_types: ['card'],
@@ -91,6 +91,7 @@ export async function POST(request: NextRequest) {
       mode: 'subscription',
       success_url: `${appUrl}/dashboard?success=true`,
       cancel_url: `${appUrl}/pricing?canceled=true`,
+      allow_promotion_codes: true, // Active la saisie de codes promo sur l'interface Stripe
       metadata: {
         clerk_user_id: userId,
       },
