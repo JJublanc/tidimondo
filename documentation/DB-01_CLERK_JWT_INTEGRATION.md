@@ -806,8 +806,8 @@ CLERK_CLIENT_SECRET=your_prod_client_secret
 
 # Supabase Configuration (Projet de production)
 NEXT_PUBLIC_SUPABASE_URL=https://xxx-prod.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.prod_key
-SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.prod_service_key
+NEXT_PUBLIC_SUPABASE_ANON_KEY=xxxxxxxxx.prod_key
+SUPABASE_SERVICE_ROLE_KEY=xxxxxxxx.prod_service_key
 ```
 
 #### B. Configuration des Domaines et Redirections

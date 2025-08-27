@@ -26,9 +26,6 @@ export default function HomePage() {
             <Link href="#pricing" className="text-gray-600 hover:text-gray-900 transition-colors">
               Tarifs
             </Link>
-            <Link href="#about" className="text-gray-600 hover:text-gray-900 transition-colors">
-              À propos
-            </Link>
           </nav>
 
           <div className="flex items-center space-x-4">
@@ -376,9 +373,6 @@ export default function HomePage() {
               </Link>
               <Link href="#" className="hover:text-white transition-colors">
                 Confidentialité
-              </Link>
-              <Link href="#" className="hover:text-white transition-colors">
-                Contact
               </Link>
             </div>
           </div>

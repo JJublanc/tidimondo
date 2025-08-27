@@ -95,6 +95,13 @@ export default async function PricingPage() {
                 9,99€<span className="text-lg text-gray-600">/mois</span>
               </div>
               <p className="text-gray-600">Pour les passionnés de cuisine</p>
+              
+              {/* Information sur les codes promo */}
+              <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <p className="text-blue-700 text-sm">
+                  💡 <strong>Astuce :</strong> Vous pourrez saisir un code promo lors du paiement !
+                </p>
+              </div>
             </div>
 
             <ul className="space-y-4 mb-8">
@@ -193,6 +200,15 @@ export default async function PricingPage() {
           <div className="grid md:grid-cols-2 gap-8">
             <div className="bg-white rounded-lg p-6 shadow">
               <h3 className="font-semibold text-gray-900 mb-2">
+                Puis-je utiliser un code promo ?
+              </h3>
+              <p className="text-gray-600">
+                Oui ! Vous pourrez saisir votre code promo directement sur la page de paiement sécurisée Stripe.
+              </p>
+            </div>
+
+            <div className="bg-white rounded-lg p-6 shadow">
+              <h3 className="font-semibold text-gray-900 mb-2">
                 Puis-je annuler à tout moment ?
               </h3>
               <p className="text-gray-600">
@@ -215,33 +231,6 @@ export default async function PricingPage() {
               </h3>
               <p className="text-gray-600">
                 La facturation est mensuelle et automatique à 9,99€/mois. Vous recevrez une facture par email à chaque renouvellement.
-              </p>
-            </div>
-            
-            <div className="bg-white rounded-lg p-6 shadow">
-              <h3 className="font-semibold text-gray-900 mb-2">
-                Que se passe-t-il si je dépasse les limites gratuites ?
-              </h3>
-              <p className="text-gray-600">
-                Vous serez invité à passer au plan Pro pour continuer à créer des séjours et recettes. Vos données existantes restent accessibles.
-              </p>
-            </div>
-
-            <div className="bg-white rounded-lg p-6 shadow">
-              <h3 className="font-semibold text-gray-900 mb-2">
-                Mes données sont-elles sécurisées ?
-              </h3>
-              <p className="text-gray-600">
-                Absolument. Toutes vos données sont chiffrées et sauvegardées automatiquement. Les utilisateurs Pro bénéficient de sauvegardes renforcées.
-              </p>
-            </div>
-
-            <div className="bg-white rounded-lg p-6 shadow">
-              <h3 className="font-semibold text-gray-900 mb-2">
-                Puis-je utiliser TidiMondo sur plusieurs appareils ?
-              </h3>
-              <p className="text-gray-600">
-                Oui ! Avec le plan Pro, vos données se synchronisent automatiquement entre tous vos appareils (smartphone, tablette, ordinateur).
               </p>
             </div>
           </div>

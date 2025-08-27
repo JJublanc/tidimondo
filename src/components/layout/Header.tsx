@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { UserButton, useUser } from '@clerk/nextjs'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, MessageCircle } from 'lucide-react'
 
 interface HeaderProps {
   title: string
@@ -32,11 +32,25 @@ export function Header({ title, backLink, backText = "Retour", showUser = true }
           </div>
           
           {showUser && user && (
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">
-                {user?.firstName || user?.emailAddresses[0]?.emailAddress}
-              </span>
-              <UserButton />
+            <div className="flex items-center space-x-6">
+              {/* Navigation pour utilisateurs connectés */}
+              <nav className="flex items-center space-x-4">
+                <Link
+                  href="/contact"
+                  className="flex items-center space-x-1 text-gray-600 hover:text-green-600 transition-colors duration-200"
+                  title="Contactez-nous"
+                >
+                  <MessageCircle className="h-5 w-5" />
+                  <span className="text-sm font-medium">Contact</span>
+                </Link>
+              </nav>
+              
+              <div className="flex items-center space-x-4 border-l border-gray-200 pl-6">
+                <span className="text-sm text-gray-600">
+                  {user?.firstName || user?.emailAddresses[0]?.emailAddress}
+                </span>
+                <UserButton />
+              </div>
             </div>
           )}
         </div>

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { SubscriptionGate } from '@/components/auth/SubscriptionGate'
 import { useSubscription } from '@/hooks/useSubscription'
 import { useIsAdmin } from '@/hooks/useIsAdmin'
+import { Header } from '@/components/layout/Header'
 import {
   Crown,
   Calendar,
@@ -30,32 +31,20 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-4">
-              <div className="w-8 h-8 bg-gradient-to-r from-green-600 to-green-500 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">T</span>
-              </div>
-              <h1 className="text-xl font-semibold text-gray-900">TidiMondo Dashboard</h1>
-              {hasProAccess && (
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gradient-to-r from-green-100 to-green-50 text-green-800">
-                  <Crown className="h-3 w-3 mr-1" />
-                  Pro
-                </span>
-              )}
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">
-                Bonjour, {user?.firstName || user?.emailAddresses[0]?.emailAddress}
-              </span>
-              <UserButton />
-            </div>
+      {/* Header avec navigation Contact */}
+      <Header title="TidiMondo Dashboard" showUser={true} />
+      
+      {/* Badge Pro sous le header */}
+      {hasProAccess && (
+        <div className="bg-white border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gradient-to-r from-green-100 to-green-50 text-green-800">
+              <Crown className="h-3 w-3 mr-1" />
+              Pro
+            </span>
           </div>
         </div>
-      </header>
+      )}
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
