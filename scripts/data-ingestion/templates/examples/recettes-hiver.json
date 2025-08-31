@@ -1,0 +1,208 @@
+{
+  "metadata": {
+    "batch_name": "recettes_hiver_2025",
+    "description": "Génération de recettes hivernales réconfortantes et nourrissantes",
+    "target_count": 10,
+    "created_by": "System",
+    "creation_date": "2025-08-30",
+    "notes": "Focus sur les plats mijotés et légumes d'hiver"
+  },
+  "recettes": [
+    {
+      "description": "Pot-au-feu traditionnel français avec bœuf, légumes racines et bouquet garni",
+      "contraintes": {
+        "saison": ["hiver"],
+        "regime_alimentaire": [],
+        "difficulte": 3,
+        "temps_preparation_max": 30,
+        "temps_cuisson_max": 180,
+        "type_repas": ["dejeuner", "diner"],
+        "portions": 6,
+        "budget_type": "moyen"
+      },
+      "preferences": {
+        "style_cuisine": "francais",
+        "niveau_detail": "detaille",
+        "include_alternatives": true,
+        "focus_saisonnier": true
+      }
+    },
+    {
+      "description": "Soupe de butternut rôtie au gingembre et lait de coco avec graines de courge grillées",
+      "contraintes": {
+        "saison": ["hiver", "automne"],
+        "regime_alimentaire": ["vegan", "sans_gluten"],
+        "difficulte": 2,
+        "temps_preparation_max": 20,
+        "temps_cuisson_max": 40,
+        "type_repas": ["dejeuner", "diner"],
+        "portions": 4,
+        "budget_type": "economique"
+      },
+      "preferences": {
+        "style_cuisine": "fusion",
+        "niveau_detail": "detaille",
+        "include_alternatives": true,
+        "focus_saisonnier": true
+      }
+    },
+    {
+      "description": "Gratin dauphinois aux pommes de terre, crème fraîche et gruyère râpé",
+      "contraintes": {
+        "saison": ["hiver"],
+        "regime_alimentaire": ["vegetarien"],
+        "difficulte": 2,
+        "temps_preparation_max": 25,
+        "temps_cuisson_max": 60,
+        "type_repas": ["dejeuner", "diner"],
+        "portions": 6,
+        "budget_type": "moyen"
+      },
+      "preferences": {
+        "style_cuisine": "francais",
+        "niveau_detail": "detaille",
+        "include_alternatives": false,
+        "focus_saisonnier": false
+      }
+    },
+    {
+      "description": "Chili végétarien aux haricots rouges, tomates, poivrons et épices mexicaines",
+      "contraintes": {
+        "saison": ["hiver"],
+        "regime_alimentaire": ["vegetarien", "sans_gluten"],
+        "difficulte": 2,
+        "temps_preparation_max": 15,
+        "temps_cuisson_max": 45,
+        "type_repas": ["dejeuner", "diner"],
+        "portions": 5,
+        "budget_type": "economique"
+      },
+      "preferences": {
+        "style_cuisine": "mexicain",
+        "niveau_detail": "detaille",
+        "include_alternatives": true,
+        "focus_saisonnier": false
+      }
+    },
+    {
+      "description": "Coq au vin traditionnel avec champignons de Paris, lardons et petits oignons",
+      "contraintes": {
+        "saison": ["hiver"],
+        "regime_alimentaire": [],
+        "difficulte": 4,
+        "temps_preparation_max": 40,
+        "temps_cuisson_max": 120,
+        "type_repas": ["dejeuner", "diner"],
+        "portions": 6,
+        "budget_type": "premium"
+      },
+      "preferences": {
+        "style_cuisine": "francais",
+        "niveau_detail": "detaille",
+        "include_alternatives": true,
+        "focus_saisonnier": false
+      }
+    },
+    {
+      "description": "Soupe de lentilles corail au curcuma, gingembre et lait de coco",
+      "contraintes": {
+        "saison": ["hiver"],
+        "regime_alimentaire": ["vegan", "sans_gluten"],
+        "difficulte": 2,
+        "temps_preparation_max": 15,
+        "temps_cuisson_max": 25,
+        "type_repas": ["dejeuner", "diner"],
+        "portions": 4,
+        "budget_type": "economique"
+      },
+      "preferences": {
+        "style_cuisine": "indien",
+        "niveau_detail": "detaille",
+        "include_alternatives": true,
+        "focus_saisonnier": false
+      }
+    },
+    {
+      "description": "Hachis parmentier traditionnel au bœuf haché, purée de pommes de terre et gruyère",
+      "contraintes": {
+        "saison": ["hiver"],
+        "regime_alimentaire": [],
+        "difficulte": 3,
+        "temps_preparation_max": 45,
+        "temps_cuisson_max": 40,
+        "type_repas": ["dejeuner", "diner"],
+        "portions": 6,
+        "budget_type": "moyen"
+      },
+      "preferences": {
+        "style_cuisine": "francais",
+        "niveau_detail": "detaille",
+        "include_alternatives": false,
+        "focus_saisonnier": false
+      }
+    },
+    {
+      "description": "Ravioles du Dauphiné aux épinards, ricotta et sauce aux noix",
+      "contraintes": {
+        "saison": ["hiver"],
+        "regime_alimentaire": ["vegetarien"],
+        "difficulte": 3,
+        "temps_preparation_max": 60,
+        "temps_cuisson_max": 15,
+        "type_repas": ["dejeuner", "diner"],
+        "portions": 4,
+        "budget_type": "premium"
+      },
+      "preferences": {
+        "style_cuisine": "francais",
+        "niveau_detail": "detaille",
+        "include_alternatives": true,
+        "focus_saisonnier": false
+      }
+    },
+    {
+      "description": "Tarte tatin aux pommes caramélisées et pâte feuilletée maison",
+      "contraintes": {
+        "saison": ["hiver", "automne"],
+        "regime_alimentaire": ["vegetarien"],
+        "difficulte": 4,
+        "temps_preparation_max": 50,
+        "temps_cuisson_max": 35,
+        "type_repas": ["collation"],
+        "portions": 8,
+        "budget_type": "moyen"
+      },
+      "preferences": {
+        "style_cuisine": "francais",
+        "niveau_detail": "detaille",
+        "include_alternatives": false,
+        "focus_saisonnier": true
+      }
+    },
+    {
+      "description": "Fondue savoyarde traditionnelle aux trois fromages avec pain de campagne",
+      "contraintes": {
+        "saison": ["hiver"],
+        "regime_alimentaire": ["vegetarien"],
+        "difficulte": 2,
+        "temps_preparation_max": 20,
+        "temps_cuisson_max": 15,
+        "type_repas": ["diner"],
+        "portions": 4,
+        "budget_type": "premium"
+      },
+      "preferences": {
+        "style_cuisine": "francais",
+        "niveau_detail": "detaille",
+        "include_alternatives": true,
+        "focus_saisonnier": false
+      }
+    }
+  ],
+  "options": {
+    "generate_variations": false,
+    "validate_strict": true,
+    "auto_fix_errors": true,
+    "include_nutrition_info": true
+  }
+}

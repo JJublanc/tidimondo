@@ -328,7 +328,8 @@ export default function ModifierRecettePage() {
       router.push(`/recettes/${recetteId}`);
     } catch (error) {
       console.error('Erreur modification recette:', error);
-      alert('Erreur lors de la modification de la recette');
+      // Utiliser le message d'erreur du hook qui provient de l'API
+      alert(error instanceof Error ? error.message : 'Erreur lors de la modification de la recette');
     }
   };
 

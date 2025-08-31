@@ -159,22 +159,113 @@ export async function POST(request: NextRequest) {
 
       case 'invoice.payment_succeeded': {
         const invoice = event.data.object as Stripe.Invoice
-        console.log('Payment succeeded:', invoice.id)
+        console.log('💰 INVOICE.PAYMENT_SUCCEEDED - Début du traitement:', {
+          invoiceId: invoice.id,
+          customerId: invoice.customer,
+          subscriptionId: (invoice as InvoiceWithSubscription).subscription,
+          amount: invoice.amount_paid,
+          hasSubscription: !!(invoice as InvoiceWithSubscription).subscription,
+          billingReason: invoice.billing_reason,
+          status: invoice.status
+        })
 
+        // Cas 1: Invoice avec subscription (renouvellement d'abonnement)
         if ((invoice as InvoiceWithSubscription).subscription) {
-          // Réactiver l'abonnement si nécessaire
-          const { error } = await supabaseAdmin
+          console.log('🔄 Traitement du renouvellement d\'abonnement...')
+          
+          const { data, error } = await supabaseAdmin
             .from('users')
             .update({
               subscription_status: 'active',
               updated_at: new Date().toISOString()
             })
             .eq('stripe_customer_id', invoice.customer as string)
+            .select()
 
           if (error) {
-            console.error('Erreur Supabase:', error)
+            console.error('❌ Erreur Supabase pour renouvellement:', {
+              error: error.message,
+              details: error.details,
+              code: error.code
+            })
           } else {
-            console.log('Paiement réussi pour l\'abonnement:', (invoice as InvoiceWithSubscription).subscription)
+            console.log('✅ Abonnement renouvelé avec succès:', {
+              subscriptionId: (invoice as InvoiceWithSubscription).subscription,
+              userData: data
+            })
+          }
+        }
+        // Cas 2: Invoice sans subscription (paiement initial ou one-time)
+        else {
+          console.log('⚠️ Invoice sans subscription - Recherche du customer dans Supabase...')
+          
+          // Vérifier si le customer existe dans notre base
+          const { data: userData, error: fetchError } = await supabaseAdmin
+            .from('users')
+            .select('*')
+            .eq('stripe_customer_id', invoice.customer as string)
+            .single()
+
+          if (fetchError) {
+            console.error('❌ Erreur lors de la recherche du customer:', {
+              error: fetchError.message,
+              customerId: invoice.customer
+            })
+          } else if (userData) {
+            console.log('📋 Customer trouvé dans Supabase:', {
+              clerkUserId: userData.clerk_user_id,
+              email: userData.email,
+              currentStatus: userData.subscription_status,
+              stripeCustomerId: userData.stripe_customer_id
+            })
+            
+            // Si l'utilisateur n'est pas encore actif, l'activer
+            if (userData.subscription_status !== 'active') {
+              console.log('🔧 Activation du compte premium...')
+              
+              const { data: updateData, error: updateError } = await supabaseAdmin
+                .from('users')
+                .update({
+                  subscription_status: 'active',
+                  updated_at: new Date().toISOString()
+                })
+                .eq('stripe_customer_id', invoice.customer as string)
+                .select()
+
+              if (updateError) {
+                console.error('❌ Erreur lors de l\'activation:', {
+                  error: updateError.message,
+                  details: updateError.details,
+                  code: updateError.code
+                })
+              } else {
+                console.log('✅ COMPTE PREMIUM ACTIVÉ AVEC SUCCÈS:', {
+                  clerkUserId: userData.clerk_user_id,
+                  invoiceId: invoice.id,
+                  updateData
+                })
+              }
+            } else {
+              console.log('ℹ️ Utilisateur déjà actif - Aucune action nécessaire')
+            }
+          } else {
+            console.error('⚠️ AUCUN UTILISATEUR TROUVÉ avec ce customer_id:', {
+              customerId: invoice.customer,
+              invoiceId: invoice.id
+            })
+            
+            // Essayer de trouver par une autre méthode si possible
+            console.log('🔍 Tentative de récupération via Stripe customer...')
+            try {
+              const customer = await stripe.customers.retrieve(invoice.customer as string)
+              console.log('📊 Données customer Stripe:', {
+                customerId: customer.id,
+                email: 'email' in customer ? customer.email : 'N/A',
+                metadata: 'metadata' in customer ? customer.metadata : {}
+              })
+            } catch (stripeError) {
+              console.error('❌ Erreur lors de la récupération du customer Stripe:', stripeError)
+            }
           }
         }
         break

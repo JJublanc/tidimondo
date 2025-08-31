@@ -162,6 +162,8 @@ export const useRecettes = (): UseRecettesReturn => {
       const result = await response.json();
       
       if (!result.success) {
+        // Afficher directement le message de l'API
+        setError(result.error || 'Erreur lors de la mise à jour de la recette');
         throw new Error(result.error || 'Erreur lors de la mise à jour de la recette');
       }
       
@@ -170,7 +172,7 @@ export const useRecettes = (): UseRecettesReturn => {
       
       return updatedRecette;
     } catch (error) {
-      handleError(error, 'Erreur lors de la mise à jour de la recette');
+      // Ne pas appeler handleError car setError a déjà été appelé dans le bloc if (!result.success)
       throw error;
     } finally {
       setLoading(false);
