@@ -1,0 +1,208 @@
+{
+  "metadata": {
+    "batch_name": "recettes_printemps_2025",
+    "description": "Génération de recettes printanières fraîches et légères avec légumes nouveaux",
+    "target_count": 10,
+    "created_by": "System",
+    "creation_date": "2025-08-30",
+    "notes": "Focus sur les légumes primeurs et saveurs fraîches du printemps"
+  },
+  "recettes": [
+    {
+      "description": "Velouté d'asperges vertes aux herbes fraîches et crème de ciboulette",
+      "contraintes": {
+        "saison": ["printemps"],
+        "regime_alimentaire": ["vegetarien"],
+        "difficulte": 2,
+        "temps_preparation_max": 20,
+        "temps_cuisson_max": 30,
+        "type_repas": ["dejeuner", "diner"],
+        "portions": 4,
+        "budget_type": "moyen"
+      },
+      "preferences": {
+        "style_cuisine": "francais",
+        "niveau_detail": "detaille",
+        "include_alternatives": true,
+        "focus_saisonnier": true
+      }
+    },
+    {
+      "description": "Salade de fèves fraîches, petits pois, radis roses et menthe avec vinaigrette au citron",
+      "contraintes": {
+        "saison": ["printemps"],
+        "regime_alimentaire": ["vegan", "sans_gluten"],
+        "difficulte": 1,
+        "temps_preparation_max": 25,
+        "temps_cuisson_max": 5,
+        "type_repas": ["dejeuner"],
+        "portions": 4,
+        "budget_type": "economique"
+      },
+      "preferences": {
+        "style_cuisine": "mediterraneen",
+        "niveau_detail": "detaille",
+        "include_alternatives": true,
+        "focus_saisonnier": true
+      }
+    },
+    {
+      "description": "Quiche aux épinards, ricotta et pignons de pin sur pâte brisée maison",
+      "contraintes": {
+        "saison": ["printemps"],
+        "regime_alimentaire": ["vegetarien"],
+        "difficulte": 3,
+        "temps_preparation_max": 40,
+        "temps_cuisson_max": 35,
+        "type_repas": ["dejeuner", "diner"],
+        "portions": 6,
+        "budget_type": "moyen"
+      },
+      "preferences": {
+        "style_cuisine": "francais",
+        "niveau_detail": "detaille",
+        "include_alternatives": false,
+        "focus_saisonnier": true
+      }
+    },
+    {
+      "description": "Risotto aux petits pois, parmesan et zeste de citron avec bouillon de légumes maison",
+      "contraintes": {
+        "saison": ["printemps"],
+        "regime_alimentaire": ["vegetarien"],
+        "difficulte": 3,
+        "temps_preparation_max": 30,
+        "temps_cuisson_max": 25,
+        "type_repas": ["dejeuner", "diner"],
+        "portions": 4,
+        "budget_type": "moyen"
+      },
+      "preferences": {
+        "style_cuisine": "italien",
+        "niveau_detail": "detaille",
+        "include_alternatives": true,
+        "focus_saisonnier": true
+      }
+    },
+    {
+      "description": "Pavé de saumon grillé aux herbes, courgettes nouvelles et pommes de terre grenaille",
+      "contraintes": {
+        "saison": ["printemps"],
+        "regime_alimentaire": ["sans_gluten"],
+        "difficulte": 2,
+        "temps_preparation_max": 20,
+        "temps_cuisson_max": 20,
+        "type_repas": ["dejeuner", "diner"],
+        "portions": 4,
+        "budget_type": "premium"
+      },
+      "preferences": {
+        "style_cuisine": "francais",
+        "niveau_detail": "detaille",
+        "include_alternatives": true,
+        "focus_saisonnier": true
+      }
+    },
+    {
+      "description": "Tarte fine aux artichauts violets, chèvre frais et thym avec pâte feuilletée",
+      "contraintes": {
+        "saison": ["printemps"],
+        "regime_alimentaire": ["vegetarien"],
+        "difficulte": 3,
+        "temps_preparation_max": 35,
+        "temps_cuisson_max": 25,
+        "type_repas": ["dejeuner", "apero"],
+        "portions": 6,
+        "budget_type": "moyen"
+      },
+      "preferences": {
+        "style_cuisine": "francais",
+        "niveau_detail": "detaille",
+        "include_alternatives": false,
+        "focus_saisonnier": true
+      }
+    },
+    {
+      "description": "Carpaccio de radis noir et roquette, copeaux de parmesan et vinaigrette à la truffe",
+      "contraintes": {
+        "saison": ["printemps"],
+        "regime_alimentaire": ["vegetarien"],
+        "difficulte": 1,
+        "temps_preparation_max": 15,
+        "temps_cuisson_max": 0,
+        "type_repas": ["dejeuner", "apero"],
+        "portions": 4,
+        "budget_type": "premium"
+      },
+      "preferences": {
+        "style_cuisine": "italien",
+        "niveau_detail": "detaille",
+        "include_alternatives": true,
+        "focus_saisonnier": true
+      }
+    },
+    {
+      "description": "Blanquette de veau aux carottes nouvelles, navets et petits oignons blancs",
+      "contraintes": {
+        "saison": ["printemps"],
+        "regime_alimentaire": [],
+        "difficulte": 4,
+        "temps_preparation_max": 45,
+        "temps_cuisson_max": 90,
+        "type_repas": ["dejeuner", "diner"],
+        "portions": 6,
+        "budget_type": "premium"
+      },
+      "preferences": {
+        "style_cuisine": "francais",
+        "niveau_detail": "detaille",
+        "include_alternatives": true,
+        "focus_saisonnier": true
+      }
+    },
+    {
+      "description": "Panna cotta aux fraises des bois et coulis de rhubarbe",
+      "contraintes": {
+        "saison": ["printemps"],
+        "regime_alimentaire": ["vegetarien", "sans_gluten"],
+        "difficulte": 2,
+        "temps_preparation_max": 20,
+        "temps_cuisson_max": 10,
+        "type_repas": ["collation"],
+        "portions": 6,
+        "budget_type": "moyen"
+      },
+      "preferences": {
+        "style_cuisine": "italien",
+        "niveau_detail": "detaille",
+        "include_alternatives": false,
+        "focus_saisonnier": true
+      }
+    },
+    {
+      "description": "Salade de pousses d'épinards, œuf poché, lardons et croûtons à l'ail",
+      "contraintes": {
+        "saison": ["printemps"],
+        "regime_alimentaire": [],
+        "difficulte": 2,
+        "temps_preparation_max": 15,
+        "temps_cuisson_max": 10,
+        "type_repas": ["dejeuner"],
+        "portions": 2,
+        "budget_type": "economique"
+      },
+      "preferences": {
+        "style_cuisine": "francais",
+        "niveau_detail": "detaille",
+        "include_alternatives": true,
+        "focus_saisonnier": true
+      }
+    }
+  ],
+  "options": {
+    "generate_variations": false,
+    "validate_strict": true,
+    "auto_fix_errors": true,
+    "include_nutrition_info": true
+  }
+}

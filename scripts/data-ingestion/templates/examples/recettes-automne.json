@@ -1,0 +1,189 @@
+{
+  "metadata": {
+    "batch_name": "recettes_automne_2025",
+    "description": "Génération de recettes automnales chaleureuses avec légumes de saison",
+    "target_count": 10,
+    "created_by": "System",
+    "creation_date": "2025-08-30",
+    "notes": "Focus sur les courges, champignons et légumes racines d'automne"
+  },
+  "recettes": [
+    {
+      "description": "Velouté de butternut aux châtaignes et crème de marron",
+      "contraintes": {
+        "saison": ["automne"],
+        "regime_alimentaire": ["vegetarien"],
+        "difficulte": 2,
+        "temps_preparation_max": 25,
+        "temps_cuisson_max": 35,
+        "type_repas": ["dejeuner", "diner"],
+        "portions": 6,
+        "budget_type": "moyen"
+      },
+      "preferences": {
+        "style_cuisine": "francais",
+        "niveau_detail": "detaille",
+        "include_alternatives": true,
+        "focus_saisonnier": true
+      }
+    },
+    {
+      "description": "Risotto aux cèpes et parmesan avec huile de truffe",
+      "contraintes": {
+        "saison": ["automne"],
+        "regime_alimentaire": ["vegetarien"],
+        "difficulte": 3,
+        "temps_preparation_max": 30,
+        "temps_cuisson_max": 25,
+        "type_repas": ["dejeuner", "diner"],
+        "portions": 4,
+        "budget_type": "premium"
+      },
+      "preferences": {
+        "style_cuisine": "italien",
+        "niveau_detail": "detaille",
+        "include_alternatives": true,
+        "focus_saisonnier": true
+      }
+    },
+    {
+      "description": "Tajine d'agneau aux coings, cannelle et amandes effilées",
+      "contraintes": {
+        "saison": ["automne"],
+        "regime_alimentaire": ["sans_gluten"],
+        "difficulte": 3,
+        "temps_preparation_max": 30,
+        "temps_cuisson_max": 120,
+        "type_repas": ["dejeuner", "diner"],
+        "portions": 6,
+        "budget_type": "premium"
+      },
+      "preferences": {
+        "style_cuisine": "marocain",
+        "niveau_detail": "detaille",
+        "include_alternatives": true,
+        "focus_saisonnier": true
+      }
+    },
+    {
+      "description": "Tarte rustique aux poires, roquefort et noix sur pâte brisée",
+      "contraintes": {
+        "saison": ["automne"],
+        "regime_alimentaire": ["vegetarien"],
+        "difficulte": 2,
+        "temps_preparation_max": 25,
+        "temps_cuisson_max": 30,
+        "type_repas": ["dejeuner", "apero"],
+        "portions": 8,
+        "budget_type": "moyen"
+      },
+      "preferences": {
+        "style_cuisine": "francais",
+        "niveau_detail": "detaille",
+        "include_alternatives": false,
+        "focus_saisonnier": true
+      }
+    },
+    {
+      "description": "Bœuf bourguignon aux champignons de Paris, lardons et petits oignons",
+      "contraintes": {
+        "saison": ["automne", "hiver"],
+        "regime_alimentaire": [],
+        "difficulte": 4,
+        "temps_preparation_max": 45,
+        "temps_cuisson_max": 150,
+        "type_repas": ["dejeuner", "diner"],
+        "portions": 6,
+        "budget_type": "premium"
+      },
+      "preferences": {
+        "style_cuisine": "francais",
+        "niveau_detail": "detaille",
+        "include_alternatives": true,
+        "focus_saisonnier": false
+      }
+    },
+    {
+      "description": "Gratin de courge spaghetti aux épinards, fromage de chèvre et pignons",
+      "contraintes": {
+        "saison": ["automne"],
+        "regime_alimentaire": ["vegetarien", "sans_gluten"],
+        "difficulte": 2,
+        "temps_preparation_max": 30,
+        "temps_cuisson_max": 45,
+        "type_repas": ["dejeuner", "diner"],
+        "portions": 4,
+        "budget_type": "moyen"
+      },
+      "preferences": {
+        "style_cuisine": "moderne",
+        "niveau_detail": "detaille",
+        "include_alternatives": true,
+        "focus_saisonnier": true
+      }
+    },
+    {
+      "description": "Poêlée de champignons sauvages à l'ail et persil avec polenta crémeuse",
+      "contraintes": {
+        "saison": ["automne"],
+        "regime_alimentaire": ["vegetarien", "sans_gluten"],
+        "difficulte": 2,
+        "temps_preparation_max": 20,
+        "temps_cuisson_max": 25,
+        "type_repas": ["dejeuner", "diner"],
+        "portions": 4,
+        "budget_type": "moyen"
+      },
+      "preferences": {
+        "style_cuisine": "italien",
+        "niveau_detail": "detaille",
+        "include_alternatives": true,
+        "focus_saisonnier": true
+      }
+    },
+    {
+      "description": "Clafoutis aux pommes, cannelle et calvados avec pâte à clafoutis vanillée",
+      "contraintes": {
+        "saison": ["automne"],
+        "regime_alimentaire": ["vegetarien"],
+        "difficulte": 2,
+        "temps_preparation_max": 20,
+        "temps_cuisson_max": 35,
+        "type_repas": ["collation"],
+        "portions": 8,
+        "budget_type": "economique"
+      },
+      "preferences": {
+        "style_cuisine": "francais",
+        "niveau_detail": "detaille",
+        "include_alternatives": false,
+        "focus_saisonnier": true
+      }
+    },
+    {
+      "description": "Soupe de potimarron rôti au gingembre et lait de coco avec graines de courge",
+      "contraintes": {
+        "saison": ["automne"],
+        "regime_alimentaire": ["vegan", "sans_gluten"],
+        "difficulte": 2,
+        "temps_preparation_max": 20,
+        "temps_cuisson_max": 40,
+        "type_repas": ["dejeuner", "diner"],
+        "portions": 4,
+        "budget_type": "economique"
+      },
+      "preferences": {
+        "style_cuisine": "fusion",
+        "niveau_detail": "detaille",
+        "include_alternatives": true,
+        "focus_saisonnier": true
+      }
+    }
+  ],
+  "options": {
+    "generate_variations": false,
+    "validate_strict": true,
+    "auto_fix_errors": true,
+    "include_nutrition_info": true
+  }
+}

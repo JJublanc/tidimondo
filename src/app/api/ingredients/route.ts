@@ -23,7 +23,6 @@ const ingredientCreateSchema = z.object({
   allergenes: z.array(z.enum(['gluten', 'lactose', 'oeuf', 'arachide', 'fruits_coque', 'soja', 'poisson', 'crustace'])).default([]),
   // regime_alimentaire: z.array(z.enum(['vegetarien', 'vegan', 'sans_gluten', 'sans_lactose', 'halal', 'casher'])).default([]), // Temporairement désactivé - colonne pas encore créée en DB
   saison: z.array(z.enum(['printemps', 'ete', 'automne', 'hiver'])).optional(),
-  description: z.string().max(500).optional(),
   is_public: z.boolean().default(false)
 });
 

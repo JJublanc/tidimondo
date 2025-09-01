@@ -1,0 +1,208 @@
+{
+  "metadata": {
+    "batch_name": "recettes_ete_2025",
+    "description": "Génération de recettes estivales fraîches et légères",
+    "target_count": 10,
+    "created_by": "System",
+    "creation_date": "2025-08-30",
+    "notes": "Focus sur les légumes et fruits de saison estivale"
+  },
+  "recettes": [
+    {
+      "description": "Salade de tomates cerises, mozzarella di bufala et basilic frais avec vinaigrette à l'huile d'olive extra vierge",
+      "contraintes": {
+        "saison": ["ete"],
+        "regime_alimentaire": ["vegetarien"],
+        "difficulte": 1,
+        "temps_preparation_max": 15,
+        "temps_cuisson_max": 0,
+        "type_repas": ["dejeuner", "diner"],
+        "portions": 4,
+        "budget_type": "moyen"
+      },
+      "preferences": {
+        "style_cuisine": "mediterraneen",
+        "niveau_detail": "detaille",
+        "include_alternatives": true,
+        "focus_saisonnier": true
+      }
+    },
+    {
+      "description": "Gazpacho andalou aux tomates, concombre, poivron rouge et croûtons à l'ail",
+      "contraintes": {
+        "saison": ["ete"],
+        "regime_alimentaire": ["vegan"],
+        "difficulte": 2,
+        "temps_preparation_max": 20,
+        "temps_cuisson_max": 5,
+        "type_repas": ["dejeuner", "diner"],
+        "portions": 6,
+        "budget_type": "economique"
+      },
+      "preferences": {
+        "style_cuisine": "espagnol",
+        "niveau_detail": "detaille",
+        "include_alternatives": false,
+        "focus_saisonnier": true
+      }
+    },
+    {
+      "description": "Tartare de saumon aux agrumes, avocat et coriandre fraîche avec toast de pain complet",
+      "contraintes": {
+        "saison": ["ete"],
+        "regime_alimentaire": [],
+        "difficulte": 3,
+        "temps_preparation_max": 25,
+        "temps_cuisson_max": 0,
+        "type_repas": ["dejeuner", "apero"],
+        "portions": 4,
+        "budget_type": "premium"
+      },
+      "preferences": {
+        "style_cuisine": "fusion",
+        "niveau_detail": "detaille",
+        "include_alternatives": true,
+        "focus_saisonnier": false
+      }
+    },
+    {
+      "description": "Ratatouille provençale aux légumes du soleil mijotée à l'huile d'olive et herbes de Provence",
+      "contraintes": {
+        "saison": ["ete"],
+        "regime_alimentaire": ["vegan", "sans_gluten"],
+        "difficulte": 2,
+        "temps_preparation_max": 20,
+        "temps_cuisson_max": 45,
+        "type_repas": ["dejeuner", "diner"],
+        "portions": 6,
+        "budget_type": "economique"
+      },
+      "preferences": {
+        "style_cuisine": "francais",
+        "niveau_detail": "detaille",
+        "include_alternatives": true,
+        "focus_saisonnier": true
+      }
+    },
+    {
+      "description": "Sorbet artisanal aux pêches blanches et menthe fraîche",
+      "contraintes": {
+        "saison": ["ete"],
+        "regime_alimentaire": ["vegan", "sans_gluten"],
+        "difficulte": 2,
+        "temps_preparation_max": 15,
+        "temps_cuisson_max": 0,
+        "type_repas": ["collation"],
+        "portions": 4,
+        "budget_type": "moyen"
+      },
+      "preferences": {
+        "style_cuisine": "francais",
+        "niveau_detail": "detaille",
+        "include_alternatives": false,
+        "focus_saisonnier": true
+      }
+    },
+    {
+      "description": "Carpaccio de courgettes au citron, parmesan et pignons de pin grillés",
+      "contraintes": {
+        "saison": ["ete"],
+        "regime_alimentaire": ["vegetarien", "sans_gluten"],
+        "difficulte": 1,
+        "temps_preparation_max": 15,
+        "temps_cuisson_max": 0,
+        "type_repas": ["dejeuner", "apero"],
+        "portions": 4,
+        "budget_type": "moyen"
+      },
+      "preferences": {
+        "style_cuisine": "italien",
+        "niveau_detail": "detaille",
+        "include_alternatives": true,
+        "focus_saisonnier": true
+      }
+    },
+    {
+      "description": "Bruschetta aux tomates confites, tapenade d'olives et fromage de chèvre",
+      "contraintes": {
+        "saison": ["ete"],
+        "regime_alimentaire": ["vegetarien"],
+        "difficulte": 2,
+        "temps_preparation_max": 20,
+        "temps_cuisson_max": 10,
+        "type_repas": ["apero"],
+        "portions": 6,
+        "budget_type": "moyen"
+      },
+      "preferences": {
+        "style_cuisine": "italien",
+        "niveau_detail": "detaille",
+        "include_alternatives": false,
+        "focus_saisonnier": true
+      }
+    },
+    {
+      "description": "Salade de pastèque, feta, menthe et olives noires avec vinaigrette à la lime",
+      "contraintes": {
+        "saison": ["ete"],
+        "regime_alimentaire": ["vegetarien", "sans_gluten"],
+        "difficulte": 1,
+        "temps_preparation_max": 10,
+        "temps_cuisson_max": 0,
+        "type_repas": ["dejeuner", "apero"],
+        "portions": 4,
+        "budget_type": "economique"
+      },
+      "preferences": {
+        "style_cuisine": "grec",
+        "niveau_detail": "detaille",
+        "include_alternatives": true,
+        "focus_saisonnier": true
+      }
+    },
+    {
+      "description": "Ceviche de daurade aux agrumes, coriandre et piment jalapeño",
+      "contraintes": {
+        "saison": ["ete"],
+        "regime_alimentaire": ["sans_gluten"],
+        "difficulte": 2,
+        "temps_preparation_max": 30,
+        "temps_cuisson_max": 0,
+        "type_repas": ["dejeuner", "apero"],
+        "portions": 4,
+        "budget_type": "premium"
+      },
+      "preferences": {
+        "style_cuisine": "peruvien",
+        "niveau_detail": "detaille",
+        "include_alternatives": true,
+        "focus_saisonnier": false
+      }
+    },
+    {
+      "description": "Granita au citron et basilic avec zeste de citron bio",
+      "contraintes": {
+        "saison": ["ete"],
+        "regime_alimentaire": ["vegan", "sans_gluten"],
+        "difficulte": 1,
+        "temps_preparation_max": 10,
+        "temps_cuisson_max": 0,
+        "type_repas": ["collation"],
+        "portions": 6,
+        "budget_type": "economique"
+      },
+      "preferences": {
+        "style_cuisine": "italien",
+        "niveau_detail": "detaille",
+        "include_alternatives": false,
+        "focus_saisonnier": true
+      }
+    }
+  ],
+  "options": {
+    "generate_variations": false,
+    "validate_strict": true,
+    "auto_fix_errors": true,
+    "include_nutrition_info": true
+  }
+}

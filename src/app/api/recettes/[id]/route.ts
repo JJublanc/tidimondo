@@ -49,7 +49,27 @@ function normalizeString(str: string): string {
     .trim();
 }
 
-// Vérifier que l'utilisateur est propriétaire de la recette
+// Vérifier que l'utilisateur a accès à la recette (propriétaire OU recette publique) - LECTURE SEULEMENT
+async function checkRecetteAccess(recetteId: string, userId: string) {
+  const { data: recette, error } = await supabase
+    .from('recettes')
+    .select('user_id, is_public')
+    .eq('id', recetteId)
+    .single();
+
+  if (error) {
+    throw new Error('Recette non trouvée');
+  }
+
+  // Autoriser l'accès si l'utilisateur est propriétaire OU si la recette est publique
+  if (recette.user_id !== userId && !recette.is_public) {
+    throw new Error('Accès non autorisé à cette recette');
+  }
+
+  return true;
+}
+
+// Vérifier que l'utilisateur est propriétaire de la recette - MODIFICATION SEULEMENT
 async function checkRecetteOwnership(recetteId: string, userId: string) {
   const { data: recette, error } = await supabase
     .from('recettes')
@@ -61,8 +81,9 @@ async function checkRecetteOwnership(recetteId: string, userId: string) {
     throw new Error('Recette non trouvée');
   }
 
+  // Seul le propriétaire peut modifier
   if (recette.user_id !== userId) {
-    throw new Error('Accès non autorisé à cette recette');
+    throw new Error('Seul le propriétaire peut modifier cette recette');
   }
 
   return true;
@@ -93,8 +114,8 @@ export async function GET(
     const userId = userData.id;
     const { id: recetteId } = await params;
 
-    // Vérifier la propriété de la recette
-    await checkRecetteOwnership(recetteId, userId);
+    // Vérifier l'accès à la recette (propriétaire ou publique)
+    await checkRecetteAccess(recetteId, userId);
 
     // Récupérer la recette complète avec relations
     const { data: recette, error } = await supabase
@@ -336,19 +357,31 @@ export async function PUT(
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Données invalides', 
-          details: error.errors 
+        {
+          success: false,
+          error: 'Données invalides',
+          details: error.errors
         },
         { status: 400 }
       );
     }
 
+    // Gestion spécifique des erreurs de sécurité
+    if (error instanceof Error && error.message.includes('Seul le propriétaire peut modifier')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Cette recette ne peut pas être modifiée car elle appartient à un autre utilisateur ou est une recette publique du système.',
+          code: 'MODIFICATION_NON_AUTORISEE'
+        },
+        { status: 403 }
+      );
+    }
+
     return NextResponse.json(
-      { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Erreur serveur' 
+      {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erreur serveur'
       },
       { status: 500 }
     );
