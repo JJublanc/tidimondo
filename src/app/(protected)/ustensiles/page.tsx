@@ -37,17 +37,15 @@ export default function UstensilesPage() {
   const [newUstensile, setNewUstensile] = useState({
     nom: '',
     description: '',
-    categorie: 'Cuisson'
+    categorie: 'cuisson'
   })
 
   const categories = [
-    'Cuisson',
-    'Préparation',
-    'Service',
-    'Mesure',
-    'Découpe',
-    'Mélange',
-    'Autre'
+    { value: 'cuisson', label: 'Cuisson' },
+    { value: 'preparation', label: 'Préparation' },
+    { value: 'service', label: 'Service' },
+    { value: 'mesure', label: 'Mesure' },
+    { value: 'autre', label: 'Autre' }
   ]
 
   // Charger les ustensiles
@@ -92,20 +90,35 @@ export default function UstensilesPage() {
     if (!newUstensile.nom.trim()) return
 
     try {
+      // Préparer les données avec validation
+      const ustensileData = {
+        nom: newUstensile.nom.trim(),
+        description: newUstensile.description.trim(),
+        categorie: newUstensile.categorie,
+        is_public: false
+      }
+
       const response = await fetch('/api/ustensiles', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newUstensile)
+        body: JSON.stringify(ustensileData)
       })
 
       if (response.ok) {
-        const ustensile = await response.json()
+        const result = await response.json()
+        const ustensile = result.data?.ustensile || result
         setUstensiles(prev => [...prev, ustensile])
-        setNewUstensile({ nom: '', description: '', categorie: 'Cuisson' })
+        setNewUstensile({ nom: '', description: '', categorie: 'cuisson' })
         setShowAddModal(false)
+        await loadUstensiles() // Recharger la liste
+      } else {
+        const error = await response.json()
+        console.error('Erreur API:', error)
+        alert(error.error || 'Erreur lors de la création de l\'ustensile')
       }
     } catch (error) {
       console.error('Erreur lors de l\'ajout:', error)
+      alert('Erreur lors de l\'ajout de l\'ustensile')
     }
   }
 
@@ -113,23 +126,33 @@ export default function UstensilesPage() {
     if (!editingUstensile || !editingUstensile.nom.trim()) return
 
     try {
+      // Préparer les données avec validation
+      const ustensileData = {
+        nom: editingUstensile.nom.trim(),
+        description: editingUstensile.description?.trim() || '',
+        categorie: editingUstensile.categorie
+      }
+
       const response = await fetch(`/api/ustensiles/${editingUstensile.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          nom: editingUstensile.nom,
-          description: editingUstensile.description,
-          categorie: editingUstensile.categorie
-        })
+        body: JSON.stringify(ustensileData)
       })
 
       if (response.ok) {
-        const updatedUstensile = await response.json()
-        setUstensiles(prev => prev.map(u => u.id === updatedUstensile.id ? updatedUstensile : u))
+        const result = await response.json()
+        const updatedUstensile = result.data?.ustensile || result
+        setUstensiles(prev => prev.map(u => u.id === editingUstensile.id ? updatedUstensile : u))
         setEditingUstensile(null)
+        await loadUstensiles() // Recharger la liste
+      } else {
+        const error = await response.json()
+        console.error('Erreur API:', error)
+        alert(error.error || 'Erreur lors de la modification de l\'ustensile')
       }
     } catch (error) {
       console.error('Erreur lors de la modification:', error)
+      alert('Erreur lors de la modification de l\'ustensile')
     }
   }
 
@@ -227,7 +250,7 @@ export default function UstensilesPage() {
                 >
                   <option value="all">Toutes catégories</option>
                   {categories.map(cat => (
-                    <option key={cat} value={cat}>{cat}</option>
+                    <option key={cat.value} value={cat.value}>{cat.label}</option>
                   ))}
                 </select>
               </div>
@@ -439,7 +462,7 @@ export default function UstensilesPage() {
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 >
                   {categories.map(cat => (
-                    <option key={cat} value={cat}>{cat}</option>
+                    <option key={cat.value} value={cat.value}>{cat.label}</option>
                   ))}
                 </select>
               </div>
@@ -450,7 +473,7 @@ export default function UstensilesPage() {
                 variant="outline"
                 onClick={() => {
                   setShowAddModal(false)
-                  setNewUstensile({ nom: '', description: '', categorie: 'Cuisson' })
+                  setNewUstensile({ nom: '', description: '', categorie: 'cuisson' })
                 }}
               >
                 Annuler
@@ -503,12 +526,12 @@ export default function UstensilesPage() {
                   Catégorie
                 </label>
                 <select
-                  value={editingUstensile.categorie || 'Cuisson'}
+                  value={editingUstensile.categorie || 'cuisson'}
                   onChange={(e) => setEditingUstensile(prev => prev ? { ...prev, categorie: e.target.value } : null)}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 >
                   {categories.map(cat => (
-                    <option key={cat} value={cat}>{cat}</option>
+                    <option key={cat.value} value={cat.value}>{cat.label}</option>
                   ))}
                 </select>
               </div>

@@ -14,6 +14,7 @@ export default function IngredientsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [editingIngredient, setEditingIngredient] = useState<Ingredient | null>(null);
   
   // États des filtres
   const [filters, setFilters] = useState({
@@ -57,8 +58,7 @@ export default function IngredientsPage() {
     prix_moyen: '',
     allergenes: [] as string[],
     regime_alimentaire: [] as string[],
-    saison: [] as string[],
-    description: ''
+    saison: [] as string[]
   });
 
   const handleCreateIngredient = async (e: React.FormEvent) => {
@@ -85,8 +85,7 @@ export default function IngredientsPage() {
         prix_moyen: '',
         allergenes: [],
         regime_alimentaire: [],
-        saison: [],
-        description: ''
+        saison: []
       });
       
       setShowCreateForm(false);
@@ -96,6 +95,71 @@ export default function IngredientsPage() {
     } catch (error) {
       console.error('Erreur création ingrédient:', error);
       alert('Erreur lors de la création de l\'ingrédient');
+    }
+  };
+
+  // Fonctions d'édition et de suppression
+  const handleEditIngredient = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!editingIngredient || !editingIngredient.nom.trim()) {
+      alert('Le nom de l\'ingrédient est obligatoire');
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/ingredients/${editingIngredient.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nom: editingIngredient.nom.trim(),
+          categorie: editingIngredient.categorie,
+          unite_base: editingIngredient.unite_base,
+          prix_moyen: editingIngredient.prix_moyen_euro ? parseFloat(editingIngredient.prix_moyen_euro.toString()) : undefined,
+          allergenes: editingIngredient.allergenes || [],
+          saison: editingIngredient.saison || []
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        const updatedIngredient = result.data?.ingredient || result;
+        
+        // Mettre à jour la liste locale si possible, sinon recharger
+        fetchIngredients();
+        setEditingIngredient(null);
+      } else {
+        const error = await response.json();
+        console.error('Erreur API:', error);
+        alert(error.error || 'Erreur lors de la modification de l\'ingrédient');
+      }
+    } catch (error) {
+      console.error('Erreur modification ingrédient:', error);
+      alert('Erreur lors de la modification de l\'ingrédient');
+    }
+  };
+
+  const handleDeleteIngredient = async (ingredientId: string, ingredientNom: string) => {
+    if (!confirm(`Êtes-vous sûr de vouloir supprimer l'ingrédient "${ingredientNom}" ?`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/ingredients/${ingredientId}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        // Recharger la liste
+        fetchIngredients();
+      } else {
+        const error = await response.json();
+        console.error('Erreur API:', error);
+        alert(error.error || 'Erreur lors de la suppression de l\'ingrédient');
+      }
+    } catch (error) {
+      console.error('Erreur suppression ingrédient:', error);
+      alert('Erreur lors de la suppression de l\'ingrédient');
     }
   };
 
@@ -317,10 +381,20 @@ export default function IngredientsPage() {
                         </p>
                       </div>
                       <div className="flex items-center gap-1 ml-2">
-                        <Button variant="outline" size="sm" className="p-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="p-1"
+                          onClick={() => setEditingIngredient(ingredient)}
+                        >
                           <Edit className="h-3 w-3" />
                         </Button>
-                        <Button variant="outline" size="sm" className="p-1 text-red-600 hover:text-red-700">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="p-1 text-red-600 hover:text-red-700"
+                          onClick={() => handleDeleteIngredient(ingredient.id, ingredient.nom)}
+                        >
                           <Trash2 className="h-3 w-3" />
                         </Button>
                       </div>
@@ -598,18 +672,6 @@ export default function IngredientsPage() {
                 </div>
 
                 {/* Description */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Description
-                  </label>
-                  <textarea
-                    value={newIngredient.description}
-                    onChange={(e) => setNewIngredient(prev => ({ ...prev, description: e.target.value }))}
-                    rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Description optionnelle..."
-                  />
-                </div>
 
                 {/* Actions */}
                 <div className="flex justify-end gap-3 pt-4">
@@ -622,6 +684,185 @@ export default function IngredientsPage() {
                   </Button>
                   <Button type="submit">
                     Créer l'ingrédient
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal d'édition d'ingrédient */}
+      {editingIngredient && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-6">
+                Modifier l'ingrédient
+              </h2>
+              
+              <form onSubmit={handleEditIngredient} className="space-y-6">
+                {/* Nom */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Nom de l'ingrédient *
+                  </label>
+                  <input
+                    type="text"
+                    value={editingIngredient.nom}
+                    onChange={(e) => setEditingIngredient(prev => prev ? ({ ...prev, nom: e.target.value }) : null)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Nom de l'ingrédient..."
+                    required
+                  />
+                </div>
+
+                {/* Catégorie */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Catégorie
+                  </label>
+                  <select
+                    value={editingIngredient.categorie || 'autre'}
+                    onChange={(e) => setEditingIngredient(prev => prev ? ({ ...prev, categorie: e.target.value as any }) : null)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="legume">Légume</option>
+                    <option value="fruit">Fruit</option>
+                    <option value="viande">Viande</option>
+                    <option value="poisson">Poisson</option>
+                    <option value="feculent">Féculent</option>
+                    <option value="produit_laitier">Produit laitier</option>
+                    <option value="epice">Épice</option>
+                    <option value="condiment">Condiment</option>
+                    <option value="boisson">Boisson</option>
+                    <option value="autre">Autre</option>
+                  </select>
+                </div>
+
+                {/* Unité de base */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Unité de base
+                  </label>
+                  <select
+                    value={editingIngredient.unite_base}
+                    onChange={(e) => setEditingIngredient(prev => prev ? ({ ...prev, unite_base: e.target.value as any }) : null)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="g">Grammes (g)</option>
+                    <option value="kg">Kilogrammes (kg)</option>
+                    <option value="ml">Millilitres (ml)</option>
+                    <option value="l">Litres (l)</option>
+                    <option value="piece">Pièce(s)</option>
+                  </select>
+                </div>
+
+                {/* Prix moyen */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Prix moyen (€)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={editingIngredient.prix_moyen_euro || ''}
+                    onChange={(e) => setEditingIngredient(prev => prev ? ({ ...prev, prix_moyen_euro: e.target.value ? parseFloat(e.target.value) : null }) : null)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="0.00"
+                  />
+                </div>
+
+                {/* Allergènes */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Allergènes
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { value: 'gluten', label: 'Gluten' },
+                      { value: 'lactose', label: 'Lactose' },
+                      { value: 'oeuf', label: 'Œuf' },
+                      { value: 'arachide', label: 'Arachide' },
+                      { value: 'fruits_coque', label: 'Fruits à coque' },
+                      { value: 'soja', label: 'Soja' },
+                      { value: 'poisson', label: 'Poisson' },
+                      { value: 'crustace', label: 'Crustacé' }
+                    ].map((allergene) => (
+                      <label key={allergene.value} className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={editingIngredient.allergenes?.includes(allergene.value as any) || false}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setEditingIngredient(prev => prev ? ({
+                                ...prev,
+                                allergenes: [...(prev.allergenes || []), allergene.value as any]
+                              }) : null);
+                            } else {
+                              setEditingIngredient(prev => prev ? ({
+                                ...prev,
+                                allergenes: (prev.allergenes || []).filter(a => a !== allergene.value)
+                              }) : null);
+                            }
+                          }}
+                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        />
+                        <span className="ml-2 text-sm text-gray-700">{allergene.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Saisons */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Saisons
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { value: 'printemps', label: 'Printemps' },
+                      { value: 'ete', label: 'Été' },
+                      { value: 'automne', label: 'Automne' },
+                      { value: 'hiver', label: 'Hiver' }
+                    ].map((saison) => (
+                      <label key={saison.value} className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={editingIngredient.saison?.includes(saison.value as any) || false}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setEditingIngredient(prev => prev ? ({
+                                ...prev,
+                                saison: [...(prev.saison || []), saison.value as any]
+                              }) : null);
+                            } else {
+                              setEditingIngredient(prev => prev ? ({
+                                ...prev,
+                                saison: (prev.saison || []).filter(s => s !== saison.value)
+                              }) : null);
+                            }
+                          }}
+                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        />
+                        <span className="ml-2 text-sm text-gray-700">{saison.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex justify-end gap-3 pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setEditingIngredient(null)}
+                  >
+                    Annuler
+                  </Button>
+                  <Button type="submit">
+                    Sauvegarder
                   </Button>
                 </div>
               </form>

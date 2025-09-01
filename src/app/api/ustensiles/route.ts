@@ -19,7 +19,6 @@ const ustensileCreateSchema = z.object({
   nom: z.string().min(2, 'Le nom doit contenir au moins 2 caractères').max(100),
   categorie: z.enum(['cuisson', 'preparation', 'service', 'mesure', 'autre']),
   description: z.string().max(500).optional(),
-  obligatoire_defaut: z.boolean().default(false),
   is_public: z.boolean().default(false)
 });
 
