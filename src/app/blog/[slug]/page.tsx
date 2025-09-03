@@ -6,6 +6,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { BlogArticleWithMetadata } from '@/types/blog'
 import { Button } from '@/components/ui/button'
+import { MarkdownRenderer } from '@/components/blog/MarkdownRenderer'
 import { ArrowLeft, Calendar, Clock, Eye, User, Tag, Share2, Heart } from 'lucide-react'
 
 export default function ArticleDetailPage() {
@@ -141,12 +142,10 @@ export default function ArticleDetailPage() {
       </header>
 
       {/* Contenu principal */}
-      <div className="prose prose-lg max-w-none">
-        <div 
-          dangerouslySetInnerHTML={{ __html: article.content.replace(/\n/g, '<br />') }}
-          className="whitespace-pre-wrap"
-        />
-      </div>
+      <MarkdownRenderer
+        content={article.content}
+        className="mt-8"
+      />
 
       {/* Tags */}
       {article.tags && article.tags.length > 0 && (
