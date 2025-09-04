@@ -142,11 +142,22 @@ export default function ArticleDetailPage() {
       </header>
 
       {/* Contenu principal */}
-      <div className="prose prose-lg max-w-none">
-        <div 
-          dangerouslySetInnerHTML={{ __html: article.content.replace(/\n/g, '<br />') }}
-          className="whitespace-pre-wrap"
-        />
+      <div className="prose prose-lg max-w-none markdown-content">
+        <ReactMarkdown
+          components={{
+            h1: ({children}) => <h1 className="text-3xl font-bold mb-4">{children}</h1>,
+            h2: ({children}) => <h2 className="text-2xl font-bold mb-3">{children}</h2>,
+            h3: ({children}) => <h3 className="text-xl font-bold mb-2">{children}</h3>,
+            p: ({children}) => <p className="mb-4">{children}</p>,
+            strong: ({children}) => <strong className="font-bold">{children}</strong>,
+            em: ({children}) => <em className="italic">{children}</em>,
+            ul: ({children}) => <ul className="list-disc list-inside mb-4">{children}</ul>,
+            ol: ({children}) => <ol className="list-decimal list-inside mb-4">{children}</ol>,
+            li: ({children}) => <li className="mb-1">{children}</li>,
+          }}
+        >
+          {article.content}
+        </ReactMarkdown>
       </div>
 
       {/* Tags */}
