@@ -3,6 +3,27 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Check, ArrowLeft, Crown, Calendar, FileText, Download, Smartphone, HeadphonesIcon, Shield } from 'lucide-react'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: "Tarifs TidiMondo - Plans organisation séjours culinaires",
+  description: "Choisissez votre plan TidiMondo : gratuit pour découvrir, Pro pour séjours illimités avec export PDF et planification avancée. À partir de 9,99€/mois.",
+  keywords: ["tarifs TidiMondo", "prix planification culinaire", "abonnement séjours gastronomiques", "plan pro organisation repas", "pricing menu planning"],
+  openGraph: {
+    title: "Tarifs TidiMondo - Plans organisation séjours culinaires",
+    description: "Choisissez votre plan TidiMondo : gratuit pour découvrir, Pro pour séjours illimités avec export PDF et planification avancée. À partir de 9,99€/mois.",
+    url: '/pricing',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: "Tarifs TidiMondo - Plans organisation séjours culinaires",
+    description: "Choisissez votre plan TidiMondo : gratuit pour découvrir, Pro pour séjours illimités avec export PDF et planification avancée.",
+  },
+  alternates: {
+    canonical: '/pricing',
+  },
+}
 
 export default async function PricingPage() {
   const user = await currentUser()
