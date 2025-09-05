@@ -2,6 +2,27 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
 import { ArrowRight, Check, Calendar, FileText, ShoppingCart, Package, ChefHat, Clock, Users, BookOpen, TrendingUp } from 'lucide-react'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: "TidiMondo - Planifiez vos séjours culinaires en toute sérénité",
+  description: "Organisez vos séjours culinaires facilement : créez vos recettes, planifiez vos repas jour par jour, générez vos listes de courses automatiquement. Idéal pour vacances, centres de loisirs et événements.",
+  keywords: ["planification séjours culinaires", "organisation repas vacances", "liste courses automatique", "gestion recettes voyage", "planification repas groupe", "séjours gastronomiques"],
+  openGraph: {
+    title: "TidiMondo - Planifiez vos séjours culinaires en toute sérénité",
+    description: "Organisez vos séjours culinaires facilement : créez vos recettes, planifiez vos repas jour par jour, générez vos listes de courses automatiquement.",
+    url: '/',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: "TidiMondo - Planifiez vos séjours culinaires en toute sérénité",
+    description: "Organisez vos séjours culinaires facilement : créez vos recettes, planifiez vos repas jour par jour, générez vos listes de courses automatiquement.",
+  },
+  alternates: {
+    canonical: '/',
+  },
+}
 
 export default function HomePage() {
   return (
