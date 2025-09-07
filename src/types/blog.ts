@@ -74,8 +74,9 @@ export interface BlogArticleWithMetadata extends BlogArticle {
   author_first_name: string | null;
   author_last_name: string | null;
   author_email: string;
+  author_name: string | null; // ✅ Ajout de la colonne dénormalisée
   comments_count: number;
-  tags: BlogTag[];
+  tags: BlogTag[]; // ✅ Array de tags dénormalisés
 }
 
 export interface BlogCommentWithAuthor extends BlogComment {

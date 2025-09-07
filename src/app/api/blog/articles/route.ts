@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
-import { 
-  BlogArticleFormData, 
-  BlogArticleFilters, 
+import {
+  BlogArticleFormData,
+  BlogArticleFilters,
   BlogArticleWithMetadata,
-  BlogArticleStatus 
+  BlogArticleStatus
 } from '@/types/blog';
 import {
   canUserCreateArticle,
@@ -33,8 +33,10 @@ const articleCreateSchema = z.object({
   tag_ids: z.array(z.string().uuid()).default([]),
 });
 
-// GET /api/blog/articles - Récupérer les articles avec filtres et pagination
+// ✅ GET /api/blog/articles - Version optimisée avec dénormalisation SEULE
 export async function GET(request: NextRequest) {
+  const startTime = Date.now();
+  
   try {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
@@ -56,13 +58,14 @@ export async function GET(request: NextRequest) {
     // Filtres optionnels
     const category = searchParams.get('category');
     const tag = searchParams.get('tag');
-    const status = searchParams.get('status');
+    const status = searchParams.get('status') || 'published';
     const search = searchParams.get('search');
     const myArticlesOnly = searchParams.get('my_articles_only') === 'true';
+    const slug = searchParams.get('slug');
 
-    // Construire la requête selon les permissions
+    // ✅ Construire la requête avec la vue dénormalisée optimisée
     let query = supabase
-      .from('blog_articles_with_metadata')
+      .from('blog_articles_with_metadata') // Vue dénormalisée = UNE SEULE requête
       .select('*', { count: 'exact' });
 
     // Filtres selon les permissions
@@ -71,7 +74,9 @@ export async function GET(request: NextRequest) {
       query = query.eq('status', 'published');
     } else if (userInfo.isAdmin) {
       // Admins : tous les articles
-      // Pas de filtre supplémentaire
+      if (status) {
+        query = query.eq('status', status);
+      }
     } else if (myArticlesOnly) {
       // Utilisateurs premium en mode "gestion" : seulement LEURS articles
       query = query.eq('user_id', userInfo.userId);
@@ -80,12 +85,18 @@ export async function GET(request: NextRequest) {
       query = query.or(`status.eq.published,user_id.eq.${userInfo.userId}`);
     }
 
+    // Filtres additionnels
     if (category) {
       query = query.eq('category_slug', category);
     }
 
-    if (status && userInfo?.isAdmin) {
-      query = query.eq('status', status);
+    if (tag) {
+      // Recherche dans le JSON des tags
+      query = query.contains('tags_json', [{ slug: tag }]);
+    }
+
+    if (slug) {
+      query = query.eq('slug', slug);
     }
 
     if (search) {
@@ -94,7 +105,7 @@ export async function GET(request: NextRequest) {
 
     // Pagination et tri
     query = query
-      .order('created_at', { ascending: false })
+      .order('published_at', { ascending: false })
       .range(offset, offset + limit - 1);
 
     const { data: articles, error, count } = await query;
@@ -107,7 +118,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({
+    const result = {
       data: articles || [],
       pagination: {
         page,
@@ -115,7 +126,22 @@ export async function GET(request: NextRequest) {
         total: count || 0,
         totalPages: Math.ceil((count || 0) / limit)
       }
-    });
+    };
+
+    const response = NextResponse.json(result);
+    
+    // ✅ Headers de performance simples
+    response.headers.set('X-Response-Time', `${Date.now() - startTime}ms`);
+    
+    // Headers de cache HTTP basiques
+    if (status === 'published' && !myArticlesOnly) {
+      response.headers.set('Cache-Control', 'public, s-maxage=900, stale-while-revalidate=3600');
+    } else {
+      response.headers.set('Cache-Control', 'private, max-age=60');
+    }
+
+    return response;
+
   } catch (error) {
     console.error('Erreur serveur:', error);
     return NextResponse.json(
@@ -125,7 +151,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/blog/articles - Créer un nouvel article
+// ✅ POST /api/blog/articles - Créer un nouvel article (version simplifiée)
 export async function POST(request: NextRequest) {
   try {
     const { userId: clerkUserId } = await auth();
@@ -160,8 +186,8 @@ export async function POST(request: NextRequest) {
     if (!userInfo.isAdmin && userInfo.limits) {
       if (validatedData.content.length > userInfo.limits.max_article_length) {
         return NextResponse.json(
-          { 
-            error: `Le contenu ne peut pas dépasser ${userInfo.limits.max_article_length} caractères. Votre article en contient ${validatedData.content.length}.` 
+          {
+            error: `Le contenu ne peut pas dépasser ${userInfo.limits.max_article_length} caractères. Votre article en contient ${validatedData.content.length}.`
           },
           { status: 400 }
         );
@@ -175,7 +201,6 @@ export async function POST(request: NextRequest) {
     const excerpt = validatedData.excerpt || extractExcerpt(validatedData.content);
 
     // Déterminer le statut initial
-    // Les admins peuvent choisir le statut, sinon c'est 'draft' par défaut
     const initialStatus = validatedData.status || 'draft';
 
     // Préparer les données d'insertion
@@ -187,7 +212,7 @@ export async function POST(request: NextRequest) {
       content: validatedData.content,
       category_id: validatedData.category_id || null,
       featured_image_url: validatedData.featured_image_url || null,
-      is_featured: userInfo.isAdmin ? validatedData.is_featured : false, // Seuls les admins peuvent mettre en avant
+      is_featured: userInfo.isAdmin ? validatedData.is_featured : false,
       status: initialStatus,
       published_at: initialStatus === 'published' ? new Date().toISOString() : null,
     };
@@ -220,11 +245,10 @@ export async function POST(request: NextRequest) {
 
       if (tagsError) {
         console.error('Erreur lors de l\'association des tags:', tagsError);
-        // Ne pas faire échouer la création pour les tags
       }
     }
 
-    // Récupérer l'article complet avec métadonnées
+    // Récupérer l'article complet avec métadonnées dénormalisées
     const { data: completeArticle, error: fetchError } = await supabase
       .from('blog_articles_with_metadata')
       .select('*')
